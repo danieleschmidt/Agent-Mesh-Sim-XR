@@ -603,4 +603,439 @@ const recorder = new SceneRecorder({
 // Record debugging session
 recorder.startRecording({
   viewpoint: 'first-person', // or 'third-person', 'overview'
-  includeUI:
+  includeUI: true,
+  includeAnnotations: true,
+  includeVoiceChat: true
+});
+
+// Playback controls in VR
+const playback = new PlaybackControls({
+  position: { x: 0, y: 0.8, z: -1 },
+  style: 'holographic'
+});
+
+playback.on('seek', (timestamp) => {
+  recorder.seekTo(timestamp);
+  swarm.rewindTo(timestamp);
+});
+
+// Export for sharing
+recorder.export({
+  format: 'webm',
+  annotations: 'embedded',
+  chapters: recorder.autoDetectChapters()
+});
+
+## 📈 Performance Optimization
+
+### Level-of-Detail System
+
+```typescript
+import { LODSystem, AgentLOD } from 'agent-mesh-sim-xr';
+
+const lod = new LODSystem({
+  distances: [5, 20, 50, 100], // meters
+  updateRate: 10 // Hz
+});
+
+// Define LOD levels
+lod.defineLOD(0, { // Closest
+  model: 'high-poly',
+  animations: true,
+  trails: true,
+  stateIndicators: true,
+  updateRate: 60
+});
+
+lod.defineLOD(1, {
+  model: 'medium-poly',
+  animations: true,
+  trails: false,
+  stateIndicators: true,
+  updateRate: 30
+});
+
+lod.defineLOD(2, {
+  model: 'low-poly',
+  animations: false,
+  trails: false,
+  stateIndicators: false,
+  updateRate: 10
+});
+
+lod.defineLOD(3, { // Furthest
+  model: 'billboard',
+  animations: false,
+  trails: false,
+  stateIndicators: false,
+  updateRate: 5
+});
+
+// Culling for massive swarms
+const culling = new FrustumCulling({
+  cellSize: 10, // meters
+  maxVisibleAgents: 2000,
+  priorityFunction: (agent) => {
+    // Prioritize interesting agents
+    return agent.activity * agent.influence * agent.anomalyScore;
+  }
+});
+```
+
+### GPU Instancing
+
+```typescript
+// Shader for instanced agent rendering
+const agentShader = `
+  // Vertex shader
+  attribute vec3 offset;
+  attribute vec4 color;
+  attribute float scale;
+  
+  uniform float time;
+  uniform mat4 viewMatrix;
+  uniform mat4 projectionMatrix;
+  
+  varying vec4 vColor;
+  
+  void main() {
+    vec3 transformed = position * scale + offset;
+    
+    // Simple animation
+    transformed.y += sin(time + offset.x) * 0.1;
+    
+    gl_Position = projectionMatrix * viewMatrix * vec4(transformed, 1.0);
+    vColor = color;
+  }
+`;
+
+// Create instanced mesh for thousands of agents
+const agentGeometry = new THREE.SphereGeometry(0.1, 8, 6);
+const agentMaterial = new THREE.ShaderMaterial({
+  vertexShader: agentShader,
+  fragmentShader: fragmentShader,
+  uniforms: {
+    time: { value: 0 }
+  }
+});
+
+const instancedMesh = new THREE.InstancedMesh(
+  agentGeometry,
+  agentMaterial,
+  maxAgents
+);
+
+// Update instances efficiently
+function updateInstances(agents: Agent[]) {
+  const matrices = new Float32Array(agents.length * 16);
+  const colors = new Float32Array(agents.length * 4);
+  
+  agents.forEach((agent, i) => {
+    // Set position matrix
+    tempMatrix.setPosition(agent.position);
+    tempMatrix.toArray(matrices, i * 16);
+    
+    // Set color based on state
+    const color = getStateColor(agent.state);
+    colors[i * 4] = color.r;
+    colors[i * 4 + 1] = color.g;
+    colors[i * 4 + 2] = color.b;
+    colors[i * 4 + 3] = 1.0;
+  });
+  
+  instancedMesh.instanceMatrix.array = matrices;
+  instancedMesh.instanceColor.array = colors;
+  instancedMesh.instanceMatrix.needsUpdate = true;
+  instancedMesh.instanceColor.needsUpdate = true;
+}
+```
+
+## 🧪 Example Scenarios
+
+### Swarm Robotics Debugging
+
+```typescript
+// Example: Debug drone swarm navigation
+import { DroneSwarmScenario } from 'agent-mesh-sim-xr/examples';
+
+const scenario = new DroneSwarmScenario({
+  droneCount: 100,
+  environment: 'urban',
+  mission: 'search-and-rescue'
+});
+
+// Add obstacles
+scenario.addBuildings(cityModel);
+scenario.addWeather({ wind: [5, 0, 2], turbulence: 0.3 });
+
+// Visualize sensor ranges
+scenario.showSensorCones({
+  lidar: { color: 0x00ff00, opacity: 0.2 },
+  camera: { color: 0x0000ff, opacity: 0.1 },
+  radio: { color: 0xffff00, opacity: 0.05 }
+});
+
+// Debug path planning
+scenario.on('pathPlanned', (drone, path) => {
+  const pathVis = new PathVisualization({
+    path: path,
+    color: drone.teamColor,
+    animated: true,
+    showWaypoints: true
+  });
+  
+  scene.add(pathVis);
+});
+
+// Collision prediction
+scenario.enableCollisionPrediction({
+  timeHorizon: 5, // seconds
+  showWarnings: true,
+  autoAvoid: false // Let user see the problem
+});
+```
+
+### Multi-Agent Market Simulation
+
+```typescript
+// Example: Visualize market dynamics
+import { MarketSimulation } from 'agent-mesh-sim-xr/examples';
+
+const market = new MarketSimulation({
+  traders: 500,
+  marketMakers: 10,
+  assets: ['BTC', 'ETH', 'AAPL', 'GOOGL']
+});
+
+// 3D order book visualization
+const orderBook = new OrderBook3D({
+  position: { x: -2, y: 1, z: -2 },
+  size: { width: 1, height: 2, depth: 1 },
+  priceAxis: 'y',
+  volumeAxis: 'z',
+  timeAxis: 'x'
+});
+
+// Trace order flow
+market.on('order', (order) => {
+  const flow = new OrderFlow({
+    from: market.getTrader(order.traderId),
+    to: orderBook,
+    type: order.type,
+    size: order.size,
+    price: order.price
+  });
+  
+  flow.animate();
+});
+
+// Analyze trading strategies
+const strategyAnalyzer = new StrategyVisualizer();
+strategyAnalyzer.groupByStrategy(market.traders);
+strategyAnalyzer.showPerformanceHalos();
+strategyAnalyzer.traceProfitablePaths();
+```
+
+## 🛠️ Development Tools
+
+### XR Debug Console
+
+```typescript
+import { XRDebugConsole } from 'agent-mesh-sim-xr';
+
+const debugConsole = new XRDebugConsole({
+  position: 'wrist-mounted',
+  fontSize: 0.01,
+  maxLines: 20,
+  transparency: 0.8
+});
+
+// Log to VR console
+debugConsole.log('Simulation started');
+debugConsole.warn('High agent density detected');
+debugConsole.error('Agent 42 in invalid state');
+
+// Interactive REPL
+debugConsole.enableREPL({
+  context: {
+    swarm: swarm,
+    sim: xrSim,
+    selected: () => inspector.selectedAgent
+  }
+});
+
+// Execute commands in VR
+debugConsole.on('command', async (cmd) => {
+  try {
+    const result = await eval(cmd);
+    debugConsole.log(`> ${cmd}`);
+    debugConsole.log(result);
+  } catch (error) {
+    debugConsole.error(error.message);
+  }
+});
+```
+
+### Performance Profiler
+
+```typescript
+const profiler = new XRProfiler({
+  position: { x: 2, y: 1.5, z: -1 },
+  mode: 'minimal' // or 'detailed'
+});
+
+profiler.addSection('Rendering', [
+  'FPS',
+  'Draw Calls', 
+  'Triangles',
+  'GPU Time'
+]);
+
+profiler.addSection('Simulation', [
+  'Agent Updates/s',
+  'Physics Steps/s',
+  'Message Queue',
+  'Memory Usage'
+]);
+
+profiler.addSection('Network', [
+  'Latency',
+  'Bandwidth',
+  'Packet Loss',
+  'Connected Peers'
+]);
+
+// Flame graph in VR
+profiler.showFlameGraph({
+  duration: 1000, // ms
+  minTime: 0.1 // ms
+});
+```
+
+## 📊 Export & Analysis
+
+### Data Export
+
+```typescript
+import { DataExporter } from 'agent-mesh-sim-xr';
+
+const exporter = new DataExporter();
+
+// Export simulation data
+const data = exporter.exportSimulation({
+  format: 'parquet', // or 'csv', 'json', 'hdf5'
+  include: {
+    agentStates: true,
+    messages: true,
+    positions: true,
+    metrics: true
+  },
+  timeRange: {
+    start: session.startTime,
+    end: session.endTime
+  },
+  sampling: {
+    rate: 60, // Hz
+    method: 'interpolate' // or 'nearest', 'aggregate'
+  }
+});
+
+// Export for analysis tools
+exporter.exportForPython(data, 'simulation_data.pkl');
+exporter.exportForR(data, 'simulation_data.rds');
+exporter.exportForMatlab(data, 'simulation_data.mat');
+
+// Generate analysis notebook
+exporter.generateNotebook({
+  template: 'swarm-analysis',
+  data: data,
+  format: 'jupyter', // or 'observable', 'quarto'
+  includeCode: true
+});
+```
+
+## 🔒 Security & Privacy
+
+### Secure Multi-User Sessions
+
+```typescript
+import { SecureSession } from 'agent-mesh-sim-xr';
+
+const secure = new SecureSession({
+  encryption: 'e2e', // End-to-end
+  authentication: 'oauth2',
+  provider: 'corporate-sso'
+});
+
+// Role-based access control
+secure.setPermissions({
+  roles: {
+    admin: ['all'],
+    developer: ['view', 'debug', 'modify'],
+    observer: ['view']
+  }
+});
+
+// Audit logging
+secure.enableAuditLog({
+  logLevel: 'all',
+  storage: 's3://audit-logs/',
+  retention: '90d'
+});
+
+// Data sanitization for screen recording
+secure.enablePrivacyMode({
+  blurSensitiveData: true,
+  hideAgentIds: true,
+  anonymizeMetrics: false
+});
+```
+
+## 📚 Research & Citations
+
+```bibtex
+@inproceedings{agent_mesh_xr2025,
+  title={Agent-Mesh-Sim-XR: Immersive Debugging for Large-Scale Multi-Agent Systems},
+  author={Your Name et al.},
+  booktitle={IEEE VR},
+  year={2025}
+}
+
+@article{causal_debugging_vr2024,
+  title={Causal Trace Analysis in Virtual Reality for Agent Swarm Debugging},
+  author={Your Team},
+  journal={IEEE Transactions on Visualization and Computer Graphics},
+  year={2024}
+}
+```
+
+## 🤝 Contributing
+
+We welcome contributions in:
+- New visualization techniques
+- Agent framework integrations  
+- Performance optimizations
+- Interaction paradigms
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## 🎮 Supported Devices
+
+- **Meta Quest 2/3/Pro**
+- **Apple Vision Pro**
+- **PICO 4**
+- **Valve Index**
+- **HTC Vive Pro**
+- **Windows Mixed Reality**
+- **WebXR-compatible browsers**
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE)
+
+## 🔗 Resources
+
+- [Documentation](https://agent-mesh-sim-xr.dev)
+- [Video Tutorials](https://youtube.com/agent-mesh-xr)
+- [Discord Community](https://discord.gg/agent-mesh-xr)
+- [Blog Post](https://medium.com/@yourusername/debugging-ai-swarms-in-vr)
