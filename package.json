@@ -1,0 +1,54 @@
+{
+  "name": "agent-mesh-sim-xr",
+  "version": "1.0.0",
+  "description": "WebXR-based simulator for thousand-agent swarms with VR debugging capabilities",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "webxr",
+    "multi-agent",
+    "simulation",
+    "virtual-reality",
+    "debugging",
+    "agent-mesh"
+  ],
+  "author": "Daniel Schmidt",
+  "license": "MIT",
+  "dependencies": {
+    "@types/three": "^0.160.0",
+    "cannon-es": "^0.20.0",
+    "eventemitter3": "^5.0.1",
+    "three": "^0.160.0",
+    "uuid": "^9.0.1",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/uuid": "^9.0.7",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitest": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danieleschmidt/Agent-Mesh-Sim-XR.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
