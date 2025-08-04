@@ -1003,7 +1003,7 @@ secure.enablePrivacyMode({
 
 @article{causal_debugging_vr2024,
   title={Causal Trace Analysis in Virtual Reality for Agent Swarm Debugging},
-  author={Your Team},
+  author={Daniel Schmidt},
   journal={IEEE Transactions on Visualization and Computer Graphics},
   year={2024}
 }
