@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Mesh Sim XR - VR Agent Swarm Debugging</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: white;
+      overflow: hidden;
+    }
+    
+    #app {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    
+    #ui-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #333;
+    }
+    
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 250px;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .control-group label {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 5px;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+      color: black;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: linear-gradient(135deg, #00cc00 0%, #009900 100%);
+      transform: translateY(-1px);
+    }
+    
+    button:disabled {
+      background: #666;
+      color: #999;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    input, select {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff0000;
+    }
+    
+    .status-dot.connected {
+      background: #00ff00;
+    }
+    
+    .metrics {
+      font-size: 12px;
+      color: #aaa;
+      border-top: 1px solid #333;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    
+    #vr-enter-btn {
+      background: linear-gradient(135deg, #ff6b00 0%, #ff4500 100%);
+      font-size: 16px;
+      padding: 15px 25px;
+    }
+    
+    #vr-enter-btn:hover {
+      background: linear-gradient(135deg, #ff4500 0%, #cc3300 100%);
+    }
+    
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #00ff00;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="ui-overlay">
+      <div class="control-panel">
+        <h3>Agent Mesh XR Control</h3>
+        
+        <div class="control-group">
+          <label>Connection Status</label>
+          <div class="status-indicator">
+            <div class="status-dot" id="connection-status"></div>
+            <span id="connection-text">Disconnected</span>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label>Agent Mesh Endpoint</label>
+          <input type="text" id="endpoint-input" value="ws://localhost:8080" placeholder="WebSocket endpoint">
+          <button id="connect-btn">Connect</button>
+        </div>
+        
+        <div class="control-group">
+          <label>Visualization Mode</label>
+          <select id="viz-mode">
+            <option value="byState">By State</option>
+            <option value="byType">By Type</option>
+            <option value="byRole">By Role</option>
+            <option value="byPerformance">By Performance</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label>Agent Model</label>
+          <select id="agent-model">
+            <option value="geometric">Geometric</option>
+            <option value="avatar">Avatar</option>
+            <option value="particle">Particle</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <button id="vr-enter-btn" disabled>Enter VR</button>
+        </div>
+        
+        <div class="control-group">
+          <button id="debug-mode-btn">Toggle Debug Mode</button>
+          <button id="time-control-btn">Enable Time Control</button>
+        </div>
+        
+        <div class="metrics">
+          <div>Active Agents: <span id="agent-count">0</span></div>
+          <div>FPS: <span id="fps-counter">60</span></div>
+          <div>Render Time: <span id="render-time">0ms</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="loading" class="loading" style="display: none;">
+      <div class="spinner"></div>
+      <div>Initializing XR Environment...</div>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/demo/index.ts"></script>
+</body>
+</html>
