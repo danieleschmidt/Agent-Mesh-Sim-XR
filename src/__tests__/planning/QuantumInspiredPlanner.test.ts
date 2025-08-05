@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Vector3 } from 'three'
-import { QuantumInspiredPlanner, Task, TaskConstraint } from '../../planning/QuantumInspiredPlanner'
+import { QuantumInspiredPlanner, Task } from '../../planning/QuantumInspiredPlanner'
 import { Agent } from '../../types'
 
 describe('QuantumInspiredPlanner', () => {

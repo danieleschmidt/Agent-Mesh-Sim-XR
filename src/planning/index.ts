@@ -1,13 +1,26 @@
 // Quantum-Inspired Task Planning System
 // Export all quantum planning components
 
+import type { Task } from './QuantumInspiredPlanner'
+import type { QuantumPlanningConfig, QuantumTaskResult, QuantumPlanningMetrics } from './QuantumPlanningIntegration'
+import type { InterferencePattern } from './QuantumInterferenceEngine'
+import type { QuantumOptimizationConfig } from './QuantumPerformanceOptimizer'
+import { QuantumPlanningIntegration } from './QuantumPlanningIntegration'
+import { QuantumPerformanceOptimizer } from './QuantumPerformanceOptimizer'
+import { QuantumErrorHandler } from './QuantumErrorHandler'
+import { QuantumMonitor } from './QuantumMonitor'
+import { QuantumSecurityManager } from './QuantumSecurityManager'
+import { QuantumValidator } from './QuantumValidator'
+
 // Core Quantum Planning
-export { QuantumInspiredPlanner, Task, TaskConstraint, QuantumTaskState } from './QuantumInspiredPlanner'
-export { QuantumPlanningIntegration, QuantumPlanningConfig, QuantumTaskResult, QuantumPlanningMetrics } from './QuantumPlanningIntegration'
+export { QuantumInspiredPlanner } from './QuantumInspiredPlanner'
+export type { Task, TaskConstraint, QuantumTaskState } from './QuantumInspiredPlanner'
+export { QuantumPlanningIntegration } from './QuantumPlanningIntegration'
+export type { QuantumPlanningConfig, QuantumTaskResult, QuantumPlanningMetrics } from './QuantumPlanningIntegration'
 
 // Quantum State Management
-export { 
-  QuantumSuperpositionManager, 
+export { QuantumSuperpositionManager } from './QuantumSuperpositionManager'
+export type { 
   SuperpositionState, 
   QuantumSystem, 
   QuantumMeasurement, 
@@ -15,8 +28,8 @@ export {
 } from './QuantumSuperpositionManager'
 
 // Quantum Optimization
-export { 
-  QuantumAnnealingOptimizer, 
+export { QuantumAnnealingOptimizer } from './QuantumAnnealingOptimizer'
+export type { 
   AnnealingConfig, 
   OptimizationState, 
   QuantumMove, 
@@ -24,8 +37,8 @@ export {
 } from './QuantumAnnealingOptimizer'
 
 // Quantum Interference
-export { 
-  QuantumInterferenceEngine, 
+export { QuantumInterferenceEngine } from './QuantumInterferenceEngine'
+export type { 
   InterferencePattern, 
   TaskWave, 
   InterferenceResult, 
@@ -33,8 +46,8 @@ export {
 } from './QuantumInterferenceEngine'
 
 // Error Handling and Recovery
-export { 
-  QuantumErrorHandler, 
+export { QuantumErrorHandler } from './QuantumErrorHandler'
+export type { 
   QuantumError, 
   QuantumErrorType, 
   QuantumErrorSeverity, 
@@ -43,15 +56,15 @@ export {
 } from './QuantumErrorHandler'
 
 // Validation and Security
-export { 
-  QuantumValidator, 
+export { QuantumValidator } from './QuantumValidator'
+export type { 
   QuantumValidationError, 
   ValidationResult, 
   QuantumValidationRules 
 } from './QuantumValidator'
 
-export { 
-  QuantumSecurityManager, 
+export { QuantumSecurityManager } from './QuantumSecurityManager'
+export type { 
   QuantumSecurityThreat, 
   QuantumSecurityPolicy, 
   QuantumPermission, 
@@ -60,8 +73,8 @@ export {
 } from './QuantumSecurityManager'
 
 // Monitoring and Health
-export { 
-  QuantumMonitor, 
+export { QuantumMonitor } from './QuantumMonitor'
+export type { 
   QuantumSystemHealth, 
   QuantumComponentHealth, 
   QuantumMetrics, 
@@ -70,8 +83,8 @@ export {
 } from './QuantumMonitor'
 
 // Performance Optimization
-export { 
-  QuantumPerformanceOptimizer, 
+export { QuantumPerformanceOptimizer } from './QuantumPerformanceOptimizer'
+export type { 
   QuantumComputationCache, 
   QuantumResourcePool, 
   QuantumWorkerTask, 
@@ -286,47 +299,4 @@ export function createQuantumMonitor(): {
   }
 }
 
-// Re-export types for convenience
-export type {
-  Task,
-  TaskConstraint,
-  QuantumTaskState,
-  QuantumPlanningConfig,
-  QuantumTaskResult,
-  QuantumPlanningMetrics,
-  SuperpositionState,
-  QuantumSystem,
-  QuantumMeasurement,
-  EntanglementPair,
-  AnnealingConfig,
-  OptimizationState,
-  QuantumMove,
-  AnnealingResult,
-  InterferencePattern,
-  TaskWave,
-  InterferenceResult,
-  WaveInteraction,
-  QuantumError,
-  QuantumErrorType,
-  QuantumErrorSeverity,
-  QuantumRecoveryStrategy,
-  QuantumErrorMetrics,
-  QuantumValidationError,
-  ValidationResult,
-  QuantumValidationRules,
-  QuantumSecurityThreat,
-  QuantumSecurityPolicy,
-  QuantumPermission,
-  QuantumSecurityEvent,
-  QuantumAuditLog,
-  QuantumSystemHealth,
-  QuantumComponentHealth,
-  QuantumMetrics,
-  QuantumAlert,
-  QuantumThresholds,
-  QuantumComputationCache,
-  QuantumResourcePool,
-  QuantumWorkerTask,
-  QuantumPerformanceMetrics,
-  QuantumOptimizationConfig
-}
+// Types are already exported above via the main export statements
