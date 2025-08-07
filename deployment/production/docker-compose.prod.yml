@@ -1,0 +1,316 @@
+version: '3.8'
+
+services:
+  # Core Agent Mesh XR Application
+  agent-mesh-xr:
+    build:
+      context: ../..
+      dockerfile: deployment/production/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "8080:8080"  # WebSocket port
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WS_PORT=8080
+      - MAX_AGENTS=1000000
+      - VR_SUPPORT=true
+      - AR_SUPPORT=true
+      - GPU_ACCELERATION=true
+      - QUANTUM_ENABLED=true
+      - SECURITY_LEVEL=maximum
+      - COMPLIANCE_FRAMEWORKS=SOC2,GDPR,HIPAA,FedRAMP
+      - RESILIENCE_MODE=enterprise
+      - MONITORING_ENABLED=true
+      - DISTRIBUTED_COMPUTING=true
+    volumes:
+      - agent_data:/app/data
+      - agent_logs:/app/logs
+      - agent_backups:/app/backups
+    networks:
+      - agent_mesh_network
+      - monitoring_network
+    depends_on:
+      - redis-cluster
+      - postgres-cluster
+      - quantum-simulator
+      - monitoring-stack
+    deploy:
+      resources:
+        limits:
+          cpus: '16.0'
+          memory: 32G
+        reservations:
+          cpus: '8.0'
+          memory: 16G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cluster for High-Performance Caching
+  redis-cluster:
+    image: redis/redis-stack-server:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_ARGS=--maxmemory 8gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent_mesh_network
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+    command: >
+      redis-server 
+      --maxmemory 8gb 
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --appendonly yes
+
+  # PostgreSQL Cluster for Persistent Data
+  postgres-cluster:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=agent_mesh_xr
+      - POSTGRES_USER=agent_mesh
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - agent_mesh_network
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+    command: >
+      postgres
+      -c max_connections=500
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
+      -c maintenance_work_mem=512MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+
+  # Quantum Computing Simulator
+  quantum-simulator:
+    image: qiskit/quantum-simulator:latest
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      - MAX_QUBITS=64
+      - SIMULATOR_MODE=statevector
+      - NOISE_MODEL=disabled
+      - PARALLEL_PROCESSING=true
+    volumes:
+      - quantum_data:/quantum/data
+    networks:
+      - agent_mesh_network
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'
+          memory: 16G
+        reservations:
+          cpus: '4.0'
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Monitoring Stack (Prometheus, Grafana, AlertManager)
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules/:/etc/prometheus/rules/:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+      - GF_SERVER_ROOT_URL=https://monitoring.agent-mesh.local
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring_network
+    depends_on:
+      - prometheus
+
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - monitoring_network
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
+  # Log Aggregation
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx4g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - monitoring_network
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 6G
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - monitoring_network
+    depends_on:
+      - elasticsearch
+
+  # Load Balancer / Reverse Proxy
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/static:/usr/share/nginx/html:ro
+    networks:
+      - agent_mesh_network
+    depends_on:
+      - agent-mesh-xr
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+
+  # Security Scanner
+  security-scanner:
+    image: owasp/zap2docker-stable:latest
+    restart: "no"
+    volumes:
+      - ./security/reports:/zap/wrk:rw
+    networks:
+      - agent_mesh_network
+    command: >
+      zap-baseline.py 
+      -t http://agent-mesh-xr:3000 
+      -r security-report.html
+      -x security-report.xml
+
+  # Backup Service
+  backup-service:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/source_data:ro
+      - agent_backups:/backups
+      - ./backup/backup-script.sh:/backup-script.sh:ro
+    networks:
+      - agent_mesh_network
+    depends_on:
+      - postgres-cluster
+    command: >
+      sh -c "
+        while true; do
+          sleep 21600  # 6 hours
+          /backup-script.sh
+        done
+      "
+
+networks:
+  agent_mesh_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  monitoring_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  agent_data:
+    driver: local
+  agent_logs:
+    driver: local
+  agent_backups:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+  quantum_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
