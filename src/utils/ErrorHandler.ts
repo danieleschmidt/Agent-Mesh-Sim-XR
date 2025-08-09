@@ -287,7 +287,7 @@ export class ErrorHandler extends EventEmitter {
 
   private isCircuitBreakerOpen(module: string): boolean {
     const breaker = this.circuitBreakers.get(module)
-    return breaker ? breaker.isOpen() : false
+    return breaker ? breaker.isOpenNow() : false
   }
 
   private generateErrorId(): string {
@@ -337,12 +337,10 @@ export class ErrorHandler extends EventEmitter {
 
 class CircuitBreaker {
   private isOpen = false
-  private lastFailureTime = 0
   private timeout = 60000 // 1 minute
 
   open(): void {
     this.isOpen = true
-    this.lastFailureTime = Date.now()
     
     // Auto-close after timeout
     setTimeout(() => {

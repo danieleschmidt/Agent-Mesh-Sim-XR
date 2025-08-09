@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
 
 export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['./test-setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -12,13 +14,14 @@ export default defineConfig({
         'dist/',
         '**/*.d.ts',
         'src/demo/',
-        'vitest.config.ts'
+        'vitest.config.ts',
+        'test-setup.ts'
       ]
     }
   },
   resolve: {
     alias: {
-      '@': '/src'
+      '@': resolve(__dirname, 'src')
     }
   }
 })

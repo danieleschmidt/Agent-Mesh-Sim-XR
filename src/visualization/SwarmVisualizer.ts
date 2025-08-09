@@ -95,20 +95,18 @@ export class SwarmVisualizer {
   }
 
   addAgent(agent: Agent): void {
-    if (this.config.agentModel === 'individual') {
+    if (this.config.agentModel === 'geometric') {
       this.createIndividualAgent(agent)
     }
     
     this.initializeTrail(agent)
+    this.cache.cacheAgentState(agent.id, agent.currentState)
+    this.lodSystem.updateAgent(agent)
   }
 
   updateAgent(agent: Agent): void {
-    if (this.config.agentModel === 'individual') {
-      this.updateIndividualAgent(agent)
-    }
-    
-    this.updateTrail(agent)
-    this.updateInstancedMesh()
+    // Use batching for better performance
+    this.updateBatcher.updateAgent(agent)
   }
 
   removeAgent(agentId: string): void {
@@ -317,20 +315,6 @@ export class SwarmVisualizer {
     this.lodSystem.setCamera(camera)
   }
 
-  addAgent(agent: Agent): void {
-    if (this.config.agentModel === 'individual') {
-      this.createIndividualAgent(agent)
-    }
-    
-    this.initializeTrail(agent)
-    this.cache.cacheAgentState(agent.id, agent.currentState)
-    this.lodSystem.updateAgent(agent)
-  }
-
-  updateAgent(agent: Agent): void {
-    // Use batching for better performance
-    this.updateBatcher.updateAgent(agent)
-  }
 
   updateAgentBatch(agents: Agent[]): void {
     agents.forEach(agent => this.updateBatcher.updateAgent(agent))
@@ -354,7 +338,7 @@ export class SwarmVisualizer {
     }
 
     // Update visual representation
-    if (this.config.agentModel === 'individual') {
+    if (this.config.agentModel === 'geometric') {
       this.updateIndividualAgent(agent)
     }
     

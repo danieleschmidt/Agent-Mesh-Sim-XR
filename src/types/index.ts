@@ -19,6 +19,7 @@ export interface AgentState {
   role: string
   energy: number
   priority: number
+  goals?: string[]
 }
 
 export interface AgentMetrics {
@@ -41,6 +42,8 @@ export interface NetworkConfig {
   endpoint: string
   reconnectAttempts: number
   heartbeatInterval: number
+  retryAttempts?: number
+  timeout?: number
 }
 
 export interface XRSessionConfig {
