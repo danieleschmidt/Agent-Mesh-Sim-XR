@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { performance } from 'perf_hooks'
+import { Vector3 } from 'three'
 import { AgentMeshXR } from '../../core/AgentMeshXR'
 import { createHyperScaleSystem } from '../../scale'
 import type { Agent, AgentMeshXRConfig } from '../../types'
@@ -19,6 +20,8 @@ describe('Performance Benchmarks', () => {
     arSupport: true,
     networkConfig: {
       endpoint: 'ws://localhost:8080',
+      reconnectAttempts: 3,
+      heartbeatInterval: 30000,
       retryAttempts: 3,
       timeout: 5000
     }
@@ -91,11 +94,11 @@ describe('Performance Benchmarks', () => {
       for (const agent of agents) {
         agentMeshXR.updateAgent({
           id: agent.id,
-          position: {
-            x: agent.position.x + Math.random(),
-            y: agent.position.y + Math.random(),
-            z: agent.position.z + Math.random()
-          }
+          position: new Vector3(
+            agent.position.x + Math.random(),
+            agent.position.y + Math.random(),
+            agent.position.z + Math.random()
+          )
         })
       }
       
@@ -334,7 +337,7 @@ describe('Performance Benchmarks', () => {
           agentMeshXR.addAgent(agent)
           agentMeshXR.updateAgent({ 
             id: agent.id, 
-            position: { x: Math.random(), y: Math.random(), z: Math.random() } 
+            position: new Vector3(Math.random(), Math.random(), Math.random()) 
           })
           return agentMeshXR.getAgent(agent.id)
         })
@@ -458,21 +461,32 @@ function generateTestAgents(count: number): Agent[] {
     agents.push({
       id: `perf_agent_${i}`,
       type: 'performance_test',
-      position: {
-        x: (Math.random() - 0.5) * 200,
-        y: (Math.random() - 0.5) * 200,
-        z: (Math.random() - 0.5) * 200
-      },
+      position: new Vector3(
+        (Math.random() - 0.5) * 200,
+        (Math.random() - 0.5) * 200,
+        (Math.random() - 0.5) * 200
+      ),
+      velocity: new Vector3(0, 0, 0),
       currentState: {
         status: Math.random() > 0.3 ? 'active' : 'idle',
+        behavior: `behavior_${i % 3}`,
+        role: `role_${i % 2}`,
         energy: Math.random(),
-        goals: [`goal_${Math.floor(Math.random() * 10)}`],
-        connections: []
+        priority: Math.floor(Math.random() * 10),
+        goals: [`goal_${Math.floor(Math.random() * 10)}`]
       },
       metadata: {
         created: Date.now() - Math.random() * 10000,
         performance_score: Math.random(),
         specialization: `perf_spec_${i % 5}`
+      },
+      activeGoals: [`goal_${Math.floor(Math.random() * 10)}`],
+      connectedPeers: [],
+      metrics: {
+        cpuMs: Math.random() * 1000,
+        memoryMB: Math.random() * 500,
+        msgPerSec: Math.random() * 100,
+        uptime: Date.now() - Math.random() * 3600000
       },
       lastUpdate: Date.now()
     })

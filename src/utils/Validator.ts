@@ -1,4 +1,3 @@
-import { Vector3 } from 'three'
 import type { Agent, AgentState, NetworkConfig, XRSessionConfig } from '../types'
 
 export class ValidationError extends Error {

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { Vector3 } from 'three'
 import { AgentMeshXR } from '../../core/AgentMeshXR'
 import { createResearchSystem } from '../../research'
 import { createEnterpriseSystem } from '../../enterprise'
@@ -22,6 +23,8 @@ describe('System Integration Tests', () => {
     arSupport: true,
     networkConfig: {
       endpoint: 'ws://localhost:8080',
+      reconnectAttempts: 3,
+      heartbeatInterval: 30000,
       retryAttempts: 3,
       timeout: 5000
     }
@@ -435,21 +438,32 @@ function createTestAgents(count: number): Agent[] {
     agents.push({
       id: `test_agent_${i}`,
       type: 'test',
-      position: {
-        x: Math.random() * 100 - 50,
-        y: Math.random() * 100 - 50,
-        z: Math.random() * 100 - 50
-      },
+      position: new Vector3(
+        Math.random() * 100 - 50,
+        Math.random() * 100 - 50,
+        Math.random() * 100 - 50
+      ),
+      velocity: new Vector3(0, 0, 0),
       currentState: {
         status: Math.random() > 0.5 ? 'active' : 'idle',
+        behavior: `behavior_${i % 3}`,
+        role: `role_${i % 2}`,
         energy: Math.random(),
-        goals: [`goal_${i % 5}`],
-        connections: []
+        priority: Math.floor(Math.random() * 10),
+        goals: [`goal_${i % 5}`]
       },
       metadata: {
         created: Date.now(),
         performance_score: Math.random(),
         specialization: `spec_${i % 3}`
+      },
+      activeGoals: [`goal_${i % 5}`],
+      connectedPeers: [],
+      metrics: {
+        cpuMs: Math.random() * 1000,
+        memoryMB: Math.random() * 500,
+        msgPerSec: Math.random() * 100,
+        uptime: Date.now() - Math.random() * 3600000
       },
       lastUpdate: Date.now()
     })

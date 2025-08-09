@@ -1,7 +1,35 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { AgentMeshXR } from '../../core/AgentMeshXR'
-import { Vector3 } from 'three'
+import { Vector3, Scene } from 'three'
 import type { Agent, AgentMeshXRConfig } from '../../types'
+
+// Mock the XRManager to avoid Three.js WebGL issues in tests
+vi.mock('../../core/XRManager', () => ({
+  XRManager: vi.fn().mockImplementation(() => ({
+    startSession: vi.fn().mockResolvedValue(undefined),
+    endSession: vi.fn().mockResolvedValue(undefined),
+    render: vi.fn(),
+    getScene: vi.fn().mockReturnValue(new Scene()),
+    resetSession: vi.fn().mockResolvedValue(undefined),
+    dispose: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    emit: vi.fn()
+  }))
+}))
+
+// Mock other dependencies that might use WebGL
+vi.mock('../../visualization/SwarmVisualizer', () => ({
+  SwarmVisualizer: vi.fn().mockImplementation(() => ({
+    addAgent: vi.fn(),
+    updateAgent: vi.fn(),
+    removeAgent: vi.fn(),
+    update: vi.fn(),
+    dispose: vi.fn()
+  }))
+}))
+
+// Import after mocking
+import { AgentMeshXR } from '../../core/AgentMeshXR'
 
 // Mock WebXR APIs
 Object.defineProperty(global.navigator, 'xr', {

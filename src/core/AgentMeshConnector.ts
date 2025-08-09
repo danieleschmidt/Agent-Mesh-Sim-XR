@@ -36,7 +36,8 @@ export class AgentMeshConnector extends EventEmitter {
         }
 
         this.ws.onmessage = (event) => {
-          this.handleMessage(event.data)
+          const data = typeof event.data === 'string' ? event.data : event.data.toString()
+          this.handleMessage(data)
         }
 
         this.ws.onclose = () => {
