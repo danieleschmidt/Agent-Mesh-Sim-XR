@@ -29,26 +29,58 @@ export class XRManager extends EventEmitter {
     this.config = config
     
     this.scene = new Scene()
-    this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-    this.renderer = new WebGLRenderer({ antialias: true })
+    
+    // Handle test environment where window may not be available
+    const width = (typeof window !== 'undefined' ? window.innerWidth : 1024) || 1024
+    const height = (typeof window !== 'undefined' ? window.innerHeight : 768) || 768
+    
+    this.camera = new PerspectiveCamera(75, width / height, 0.1, 1000)
+    this.renderer = new WebGLRenderer({ 
+      antialias: true,
+      canvas: typeof document !== 'undefined' ? undefined : this.createOffscreenCanvas()
+    })
     
     this.setupRenderer()
     this.setupScene()
     this.checkXRSupport()
   }
 
+  private createOffscreenCanvas(): HTMLCanvasElement {
+    // Create mock canvas for testing environment
+    const canvas = {
+      width: 1024,
+      height: 768,
+      clientWidth: 1024,
+      clientHeight: 768,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      getContext: () => null
+    } as unknown as HTMLCanvasElement
+    
+    return canvas
+  }
+
   private setupRenderer(): void {
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    const width = (typeof window !== 'undefined' ? window.innerWidth : 1024) || 1024
+    const height = (typeof window !== 'undefined' ? window.innerHeight : 768) || 768
+    
+    this.renderer.setSize(width, height)
     this.renderer.shadowMap.enabled = true
     this.renderer.xr.enabled = true
     
-    document.body.appendChild(this.renderer.domElement)
+    // Only append to DOM if in browser environment
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.appendChild(this.renderer.domElement)
+    }
     
-    window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight
-      this.camera.updateProjectionMatrix()
-      this.renderer.setSize(window.innerWidth, window.innerHeight)
-    })
+    // Only add resize listener in browser environment
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', () => {
+        this.camera.aspect = window.innerWidth / window.innerHeight
+        this.camera.updateProjectionMatrix()
+        this.renderer.setSize(window.innerWidth, window.innerHeight)
+      })
+    }
   }
 
   private setupScene(): void {
@@ -73,7 +105,7 @@ export class XRManager extends EventEmitter {
   }
 
   private async checkXRSupport(): Promise<void> {
-    if ('xr' in navigator) {
+    if (typeof navigator !== 'undefined' && 'xr' in navigator) {
       try {
         const vrSupported = this.config.vrSupported && 
           await (navigator as any).xr.isSessionSupported('immersive-vr')

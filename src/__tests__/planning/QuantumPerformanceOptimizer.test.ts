@@ -341,9 +341,13 @@ describe('QuantumPerformanceOptimizer', () => {
 
     it('should emit algorithm selection events', () => {
       const callback = vi.fn()
-      optimizer.on('algorithmSelected', callback)
       
-      optimizer.selectOptimalAlgorithm('planning', 200, { dependencies: true })
+      // Create optimizer with adaptive optimization enabled for this test
+      const adaptiveConfig = { ...mockConfig, adaptiveOptimization: true }
+      const adaptiveOptimizer = new QuantumPerformanceOptimizer(adaptiveConfig)
+      adaptiveOptimizer.on('algorithmSelected', callback)
+      
+      adaptiveOptimizer.selectOptimalAlgorithm('planning', 200, { dependencies: true })
       
       expect(callback).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -354,6 +358,8 @@ describe('QuantumPerformanceOptimizer', () => {
           complexity: expect.any(Number)
         })
       )
+      
+      adaptiveOptimizer.dispose()
     })
 
     it('should consider problem complexity in selection', () => {
