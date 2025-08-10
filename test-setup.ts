@@ -83,6 +83,7 @@ const createWebGLContext = () => ({
   clear: vi.fn(),
   clearColor: vi.fn(),
   clearDepth: vi.fn(),
+  clearStencil: vi.fn(),
   drawArrays: vi.fn(),
   drawElements: vi.fn(),
   
@@ -134,17 +135,22 @@ const createWebGLContext = () => ({
     switch(param) {
       case 7936: return 'Mock WebGL Vendor' // VENDOR
       case 7937: return 'Mock WebGL Renderer' // RENDERER  
-      case 7938: return '1.0' // VERSION
-      case 35724: return 'Mock GLSL ES 1.00' // SHADING_LANGUAGE_VERSION
-      case 34076: return 16 // MAX_TEXTURE_SIZE
+      case 7938: return 'WebGL 1.0 (Mock)' // VERSION - proper WebGL version format
+      case 35724: return 'WebGL GLSL ES 1.0 (Mock)' // SHADING_LANGUAGE_VERSION
+      case 34076: return 4096 // MAX_TEXTURE_SIZE
       case 34024: return 16 // MAX_VERTEX_ATTRIBS
       case 36347: return 16 // MAX_VERTEX_UNIFORM_VECTORS
       case 36348: return 16 // MAX_FRAGMENT_UNIFORM_VECTORS
       case 34930: return 4 // MAX_VERTEX_TEXTURE_IMAGE_UNITS
       case 34018: return 16 // MAX_TEXTURE_IMAGE_UNITS
       case 36349: return 4 // MAX_VARYING_VECTORS
-      case 2978: return [0, 0, 1024, 768] // VIEWPORT
-      default: return null
+      case 2978: return new Int32Array([0, 0, 1024, 768]) // VIEWPORT
+      case 35379: return 'WebGL' // UNMASKED_VENDOR_WEBGL
+      case 35380: return 'Mock WebGL Implementation' // UNMASKED_RENDERER_WEBGL
+      case 3379: return 32768 // MAX_TEXTURE_SIZE
+      case 35661: return 32 // MAX_VERTEX_UNIFORM_VECTORS
+      case 35660: return 16 // MAX_FRAGMENT_UNIFORM_VECTORS
+      default: return 0
     }
   }),
   
@@ -152,6 +158,17 @@ const createWebGLContext = () => ({
   getProgramParameter: vi.fn(() => true),
   getShaderInfoLog: vi.fn(() => ''),
   getProgramInfoLog: vi.fn(() => ''),
+  
+  getContextAttributes: vi.fn(() => ({
+    alpha: true,
+    depth: true,
+    stencil: false,
+    antialias: true,
+    premultipliedAlpha: true,
+    preserveDrawingBuffer: false,
+    powerPreference: 'default',
+    failIfMajorPerformanceCaveat: false
+  })),
   
   getExtension: vi.fn((name) => {
     // Return basic extensions that Three.js might need
@@ -168,8 +185,16 @@ const createWebGLContext = () => ({
     'WEBGL_depth_texture',
     'OES_texture_float', 
     'OES_texture_half_float',
-    'OES_standard_derivatives'
+    'OES_standard_derivatives',
+    'EXT_texture_filter_anisotropic',
+    'WEBGL_compressed_texture_s3tc'
   ]),
+
+  // Additional WebGL state properties
+  VERSION: 7938,
+  VENDOR: 7936,
+  RENDERER: 7937,
+  SHADING_LANGUAGE_VERSION: 35724,
   
   canvas: {
     width: 1024,

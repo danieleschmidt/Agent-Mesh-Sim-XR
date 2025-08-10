@@ -1,0 +1,238 @@
+groups:
+  - name: agent-mesh-xr-alerts
+    rules:
+      # High-level service alerts
+      - alert: ServiceDown
+        expr: up{job="agent-mesh-xr"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: agent-mesh-xr
+        annotations:
+          summary: "Agent Mesh XR service is down"
+          description: "Agent Mesh XR service has been down for more than 30 seconds"
+
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="agent-mesh-xr"} / 1024 / 1024 / 1024) > 1.5
+        for: 2m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High memory usage detected"
+          description: "Agent Mesh XR is using {{ $value }}GB of memory"
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="agent-mesh-xr"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Agent Mesh XR CPU usage is {{ $value }}%"
+
+      # Agent-specific alerts
+      - alert: TooManyAgents
+        expr: agent_mesh_xr_agents_total > 8000
+        for: 1m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High agent count detected"
+          description: "Current agent count: {{ $value }}"
+
+      - alert: HighAgentFailureRate
+        expr: rate(agent_mesh_xr_agents_failed_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          service: agent-mesh-xr
+        annotations:
+          summary: "High agent failure rate"
+          description: "Agent failure rate: {{ $value }} failures/sec"
+
+      - alert: LowRenderFPS
+        expr: agent_mesh_xr_render_fps < 30
+        for: 30s
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "Low rendering FPS"
+          description: "Current FPS: {{ $value }}"
+
+      # Network alerts
+      - alert: HighNetworkLatency
+        expr: agent_mesh_xr_network_latency_ms > 200
+        for: 1m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High network latency"
+          description: "Current latency: {{ $value }}ms"
+
+      - alert: NetworkErrors
+        expr: rate(agent_mesh_xr_network_errors_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+          service: agent-mesh-xr
+        annotations:
+          summary: "High network error rate"
+          description: "Network error rate: {{ $value }} errors/sec"
+
+      # Security alerts
+      - alert: SecurityThreatsDetected
+        expr: increase(agent_mesh_xr_security_threats_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: agent-mesh-xr
+        annotations:
+          summary: "Security threats detected"
+          description: "{{ $value }} security threats detected in the last minute"
+
+      - alert: HighFailedAuthAttempts
+        expr: rate(agent_mesh_xr_auth_failures_total[5m]) > 20
+        for: 2m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Auth failure rate: {{ $value }} failures/sec"
+
+      # XR-specific alerts
+      - alert: XRSessionFailures
+        expr: rate(agent_mesh_xr_xr_session_failures_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "XR session failures detected"
+          description: "XR session failure rate: {{ $value }} failures/sec"
+
+      - alert: LowXRTrackingQuality
+        expr: agent_mesh_xr_xr_tracking_quality < 0.5
+        for: 30s
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "Low XR tracking quality"
+          description: "XR tracking quality: {{ $value }}"
+
+  - name: infrastructure-alerts
+    rules:
+      # Redis alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 30 seconds"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value }}%"
+
+      # PostgreSQL alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: postgres
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL has been down for more than 30 seconds"
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "PostgreSQL high connection usage"
+          description: "PostgreSQL connection usage is {{ $value }}%"
+
+      # NGINX alerts
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: nginx
+        annotations:
+          summary: "NGINX is down"
+          description: "NGINX has been down for more than 30 seconds"
+
+      - alert: NginxHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) / rate(nginx_http_requests_total[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "NGINX high error rate"
+          description: "NGINX 5xx error rate is {{ $value }}%"
+
+  - name: business-logic-alerts
+    rules:
+      # Performance degradation
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="agent-mesh-xr"}[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "Slow response times"
+          description: "95th percentile response time is {{ $value }}s"
+
+      # WebSocket connection issues
+      - alert: WebSocketConnectionDrop
+        expr: rate(agent_mesh_xr_websocket_disconnections_total[5m]) > rate(agent_mesh_xr_websocket_connections_total[5m])
+        for: 1m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "High WebSocket disconnection rate"
+          description: "WebSocket disconnection rate exceeds connection rate"
+
+      # GPU acceleration issues
+      - alert: GPUAccelerationUnavailable
+        expr: agent_mesh_xr_gpu_acceleration_available == 0
+        for: 1m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "GPU acceleration unavailable"
+          description: "GPU acceleration is not available"
+
+      # Quantum planning system alerts
+      - alert: QuantumPlanningFailures
+        expr: rate(agent_mesh_xr_quantum_planning_failures_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: warning
+          service: agent-mesh-xr
+        annotations:
+          summary: "Quantum planning failures"
+          description: "Quantum planning failure rate: {{ $value }} failures/sec"
