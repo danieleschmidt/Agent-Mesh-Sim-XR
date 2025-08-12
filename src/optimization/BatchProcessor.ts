@@ -29,7 +29,7 @@ export class BatchProcessor<T = any> extends EventEmitter {
   private config: BatchConfig
   private pendingItems: BatchItem<T>[] = []
   private processingBatches: Map<string, Promise<ProcessingResult<T>>> = new Map()
-  private flushTimer: NodeJS.Timeout | null = null
+  private flushTimer: ReturnType<typeof setTimeout> | null = null
   private processor: (items: BatchItem<T>[]) => Promise<any[]>
   private batchCounter = 0
   private stats = {

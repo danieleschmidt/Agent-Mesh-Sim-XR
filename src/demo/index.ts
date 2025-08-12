@@ -1,6 +1,7 @@
 import { AgentMeshXR, SwarmVisualizer, SpatialInspector, CausalTracer, TimelineVR } from '../index'
 import { Vector3 } from 'three'
 import type { Agent, AgentState } from '../types'
+import { logger } from '../utils/Logger'
 
 class AgentMeshXRDemo {
   private xrSim: AgentMeshXR
@@ -9,7 +10,7 @@ class AgentMeshXRDemo {
   private timelineVR: TimelineVR
   private isDebugMode = false
   private simulationAgents: Agent[] = []
-  private agentUpdateInterval?: NodeJS.Timeout
+  private agentUpdateInterval?: ReturnType<typeof setInterval>
 
   constructor() {
     this.xrSim = new AgentMeshXR({
@@ -47,11 +48,11 @@ class AgentMeshXRDemo {
   private setupEventListeners(): void {
     this.xrSim.on('connected', () => {
       this.updateConnectionStatus(true)
-      console.log('Connected to Agent Mesh')
+      logger.info('Demo', 'Connected to Agent Mesh')
     })
 
     this.xrSim.on('error', (error) => {
-      console.error('XR Error:', error)
+      logger.error('Demo', 'XR Error occurred', { error })
       this.updateConnectionStatus(false)
     })
 
@@ -60,7 +61,7 @@ class AgentMeshXRDemo {
     })
 
     this.xrSim.on('xrStarted', () => {
-      console.log('XR Session started')
+      logger.info('Demo', 'XR Session started')
       this.addXRComponents()
     })
 
@@ -71,7 +72,7 @@ class AgentMeshXRDemo {
 
     // Timeline interactions
     this.timelineVR.on('scrub', (timestamp) => {
-      console.log('Timeline scrubbed to:', new Date(timestamp))
+      logger.info('Demo', 'Timeline scrubbed to timeline position', { timestamp, date: new Date(timestamp) })
     })
   }
 
@@ -98,7 +99,7 @@ class AgentMeshXRDemo {
         }, 1000)
         
       } catch (error) {
-        console.error('Connection failed:', error)
+        logger.error('Demo', 'Connection failed', { error })
         connectBtn.disabled = false
         connectBtn.textContent = 'Connect'
       }
@@ -108,7 +109,7 @@ class AgentMeshXRDemo {
       try {
         await this.enterVR()
       } catch (error) {
-        console.error('VR entry failed:', error)
+        logger.error('Demo', 'VR entry failed', { error })
       }
     })
 
@@ -123,12 +124,12 @@ class AgentMeshXRDemo {
     vizModeSelect.addEventListener('change', (e) => {
       const mode = (e.target as HTMLSelectElement).value
       // Update visualization mode
-      console.log('Visualization mode changed to:', mode)
+      logger.info('Demo', 'Visualization mode changed', { mode })
     })
 
     agentModelSelect.addEventListener('change', (e) => {
       const model = (e.target as HTMLSelectElement).value
-      console.log('Agent model changed to:', model)
+      logger.info('Demo', 'Agent model changed', { model })
     })
   }
 
@@ -158,7 +159,7 @@ class AgentMeshXRDemo {
     } catch (error) {
       loading.style.display = 'none'
       alert('VR not supported or failed to initialize. Continuing in desktop mode.')
-      console.error('VR Error:', error)
+      logger.error('Demo', 'VR Error occurred', { error })
     }
   }
 
@@ -181,11 +182,11 @@ class AgentMeshXRDemo {
     if (this.isDebugMode) {
       this.inspector.setVisible(true)
       this.timelineVR.getGroup().visible = true
-      console.log('Debug mode enabled')
+      logger.info('Demo', 'Debug mode enabled')
     } else {
       this.inspector.setVisible(false)
       this.timelineVR.getGroup().visible = false
-      console.log('Debug mode disabled')
+      logger.info('Demo', 'Debug mode disabled')
     }
   }
 
@@ -200,7 +201,7 @@ class AgentMeshXRDemo {
     btn.textContent = 'Time Control Enabled'
     btn.disabled = true
     
-    console.log('Time control enabled')
+    logger.info('Demo', 'Time control enabled')
   }
 
   private startSimulation(): void {
@@ -347,7 +348,7 @@ class AgentMeshXRDemo {
       maxDepth: 5
     })
     
-    console.log('Causal chain for agent', agent.id, causalChain)
+    logger.info('Demo', 'Generated causal chain for agent', { agentId: agent.id, causalChain })
   }
 
   dispose(): void {

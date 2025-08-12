@@ -305,7 +305,7 @@ export class AgentMeshXR extends EventEmitter {
 
   private setupErrorRecovery(): void {
     // Setup automatic error recovery strategies
-    errorHandler.registerRetryStrategy('NetworkError', async (error, context) => {
+    errorHandler.registerRetryStrategy('NetworkError', async () => {
       logger.info('AgentMeshXR', 'Attempting network recovery')
       try {
         await this.connector.reconnect()
@@ -315,7 +315,7 @@ export class AgentMeshXR extends EventEmitter {
       }
     })
 
-    errorHandler.registerRetryStrategy('XRError', async (error, context) => {
+    errorHandler.registerRetryStrategy('XRError', async () => {
       logger.info('AgentMeshXR', 'Attempting XR recovery')
       try {
         await this.xrManager.resetSession()

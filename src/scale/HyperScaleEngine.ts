@@ -755,3 +755,4 @@ export interface HyperScaleReport {
   scalability_projections: any
   recommendations: string[]
 }
+

@@ -94,7 +94,7 @@ export interface RecoveryStep {
 
 export class ResiliencyEngine extends EventEmitter {
   private config: ResiliencyConfig
-  private systemHealth: SystemHealth
+  private systemHealth!: SystemHealth
   private circuitBreakers: Map<string, CircuitBreakerState> = new Map()
   private recoveryPlans: Map<string, DisasterRecoveryPlan> = new Map()
   private backupScheduler: BackupScheduler
@@ -138,7 +138,7 @@ export class ResiliencyEngine extends EventEmitter {
         errorHandler.handleError(
           error as Error,
           ErrorSeverity.HIGH,
-          { module: 'ResiliencyEngine', function: 'healthCheck' }
+          { module: 'ResiliencyEngine', function: 'healthCheck', timestamp: Date.now() }
         )
       }
     }, this.config.health_check_interval_ms)

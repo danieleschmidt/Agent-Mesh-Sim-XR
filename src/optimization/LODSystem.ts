@@ -26,7 +26,7 @@ export class LODSystem extends EventEmitter {
   private config: LODSystemConfig
   private agentLODs: Map<string, number> = new Map()
   private lastUpdateTime = 0
-  private updateInterval: NodeJS.Timeout | null = null
+  private updateInterval: ReturnType<typeof setInterval> | null = null
   private camera: Camera | null = null
   private priorityCache: Map<string, { priority: number; timestamp: number }> = new Map()
   private readonly PRIORITY_CACHE_DURATION = 1000 // 1 second

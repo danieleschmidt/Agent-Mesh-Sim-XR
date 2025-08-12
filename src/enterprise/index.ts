@@ -1,6 +1,28 @@
 // Enterprise-Grade Systems for Agent Mesh Sim XR
 // Export enterprise resilience and security capabilities
 
+// Import required types first
+import type { 
+  ResiliencyConfig, 
+  ResiliencyReport, 
+  SystemHealth, 
+  ComponentHealth, 
+  FailureEvent, 
+  RecoveryAction, 
+  CircuitBreakerState, 
+  DisasterRecoveryPlan 
+} from './ResiliencyEngine'
+
+import type { 
+  SecurityConfig, 
+  SecurityReport, 
+  ThreatProfile, 
+  SecurityIncident, 
+  ImpactAssessment, 
+  ZeroTrustPolicy, 
+  BehavioralAnalysis 
+} from './CyberSecurityShield'
+
 // Core Enterprise Systems
 export { ResiliencyEngine } from './ResiliencyEngine'
 export type {
@@ -599,24 +621,3 @@ export interface CostOptimization {
   description: string
 }
 
-// Import required types
-import type { 
-  ResiliencyConfig, 
-  ResiliencyReport, 
-  SystemHealth, 
-  ComponentHealth, 
-  FailureEvent, 
-  RecoveryAction, 
-  CircuitBreakerState, 
-  DisasterRecoveryPlan 
-} from './ResiliencyEngine'
-
-import type { 
-  SecurityConfig, 
-  SecurityReport, 
-  ThreatProfile, 
-  SecurityIncident, 
-  ImpactAssessment, 
-  ZeroTrustPolicy, 
-  BehavioralAnalysis 
-} from './CyberSecurityShield'

@@ -417,10 +417,11 @@ export class QuantumInterferenceEngine extends EventEmitter {
           case 'destructive':
             superposition.amplitude *= (1 - pattern.strength * patternInfluence * 0.2)
             break
-          case 'mixed':
+          case 'mixed': {
             const randomEffect = (Math.random() - 0.5) * pattern.strength * patternInfluence * 0.3
             superposition.amplitude *= (1 + randomEffect)
             break
+          }
         }
         
         totalPhaseShift += pattern.phase * patternInfluence * 0.1

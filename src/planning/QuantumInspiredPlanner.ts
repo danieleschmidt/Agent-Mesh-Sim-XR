@@ -116,6 +116,9 @@ export class QuantumInspiredPlanner extends EventEmitter {
       interference: 0.0
     }
     
+    // Normalize the initial quantum amplitudes
+    this.normalizeQuantumAmplitudes(quantumTask)
+    
     return quantumTask
   }
 
@@ -251,12 +254,20 @@ export class QuantumInspiredPlanner extends EventEmitter {
     const tasks = Array.from(this.tasks.keys())
     const agents = Array.from(this.agents.keys())
     
+    // Handle empty task list case
+    if (tasks.length === 0) {
+      return newAssignment
+    }
+    
     // Select random task with probability based on quantum coherence
     const task = this.selectTaskByCoherence(tasks)
     const currentAgents = newAssignment.get(task) || []
     
     // Quantum tunneling: reassign with probability based on superposition
-    const taskObj = this.tasks.get(task)!
+    const taskObj = this.tasks.get(task)
+    if (!taskObj || !taskObj.quantumState) {
+      return newAssignment
+    }
     const tunnelingProbability = taskObj.quantumState.coherence * this.temperature / this.config.initialTemperature
     
     if (Math.random() < tunnelingProbability) {
@@ -271,9 +282,16 @@ export class QuantumInspiredPlanner extends EventEmitter {
 
   // Select task based on quantum coherence probability
   private selectTaskByCoherence(tasks: string[]): string {
+    if (tasks.length === 0) {
+      throw new Error('Cannot select from empty task list')
+    }
+    
     const weights = tasks.map(taskId => {
-      const task = this.tasks.get(taskId)!
-      return task.quantumState.coherence
+      const task = this.tasks.get(taskId)
+      if (!task || !task.quantumState) {
+        return 0.1 // Small default weight for invalid tasks
+      }
+      return Math.max(0.01, task.quantumState.coherence) // Ensure minimum positive weight
     })
     
     return this.weightedRandomSelect(tasks, weights)
@@ -437,8 +455,12 @@ export class QuantumInspiredPlanner extends EventEmitter {
     
     this.tasks.forEach(task => {
       const requiredAgents = Math.min(task.requiredAgents, agents.length)
-      const shuffled = [...agents].sort(() => Math.random() - 0.5)
-      assignment.set(task.id, shuffled.slice(0, requiredAgents))
+      if (agents.length > 0 && requiredAgents > 0) {
+        const shuffled = [...agents].sort(() => Math.random() - 0.5)
+        assignment.set(task.id, shuffled.slice(0, requiredAgents))
+      } else {
+        assignment.set(task.id, [])
+      }
     })
     
     return assignment
@@ -475,6 +497,13 @@ export class QuantumInspiredPlanner extends EventEmitter {
       // Reduce superposition as coherence decreases
       if (task.quantumState.coherence < this.config.coherenceThreshold) {
         this.collapseQuantumState(task)
+      } else {
+        // Apply decoherence to amplitudes and normalize
+        const decoherenceFactor = Math.sqrt(decoherenceRate)
+        task.quantumState.superposition.forEach((amplitude, state) => {
+          task.quantumState.superposition.set(state, amplitude * decoherenceFactor)
+        })
+        this.normalizeQuantumAmplitudes(task)
       }
     })
   }
@@ -500,11 +529,19 @@ export class QuantumInspiredPlanner extends EventEmitter {
   // Normalize quantum amplitude probabilities
   private normalizeQuantumAmplitudes(task: Task): void {
     const amplitudes = Array.from(task.quantumState.superposition.values())
-    const norm = Math.sqrt(amplitudes.reduce((sum, amp) => sum + amp * amp, 0))
+    const norm = Math.sqrt(amplitudes.reduce((sum, amp) => sum + Math.abs(amp) * Math.abs(amp), 0))
     
-    if (norm > 0) {
+    if (norm > 0.001) { // Add small epsilon to avoid division by very small numbers
       task.quantumState.superposition.forEach((amplitude, state) => {
         task.quantumState.superposition.set(state, amplitude / norm)
+      })
+    } else {
+      // If norm is too small, reset to equal probabilities
+      const states = Array.from(task.quantumState.superposition.keys())
+      const equalProbability = 1.0 / Math.sqrt(states.length)
+      task.quantumState.superposition.clear()
+      states.forEach(state => {
+        task.quantumState.superposition.set(state, equalProbability)
       })
     }
   }

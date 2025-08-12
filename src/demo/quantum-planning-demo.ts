@@ -6,6 +6,7 @@ import { QuantumInterferenceEngine } from '../planning/QuantumInterferenceEngine
 import { QuantumPerformanceOptimizer } from '../planning/QuantumPerformanceOptimizer'
 import { QuantumPlanningUtils } from '../planning'
 import { Agent } from '../types'
+import { logger } from '../utils/Logger'
 
 export class QuantumPlanningDemo {
   private planner: QuantumInspiredPlanner
@@ -310,9 +311,9 @@ export class QuantumPlanningDemo {
     // Quantum enhancement analysis
     const quantumViz = this.planner.getQuantumStateVisualization()
     console.log(`  ⚛️  Quantum Systems: ${quantumViz.tasks.length}`)
-    console.log(`  🔗 Entangled Tasks: ${quantumViz.tasks.filter(t => t.quantumState.entangled.length > 0).length}`)
+    console.log(`  🔗 Entangled Tasks: ${quantumViz.tasks.filter((t: any) => t.quantumState.entangled.length > 0).length}`)
     
-    const avgCoherence = quantumViz.tasks.reduce((sum, t) => sum + t.quantumState.coherence, 0) / quantumViz.tasks.length
+    const avgCoherence = quantumViz.tasks.reduce((sum: number, t: any) => sum + t.quantumState.coherence, 0) / quantumViz.tasks.length
     console.log(`  🌟 Average Coherence: ${avgCoherence.toFixed(3)}`)
   }
 
@@ -390,8 +391,8 @@ export class QuantumPlanningDemo {
     
     console.log('  ⚛️  Quantum State Summary:')
     console.log(`    📊 Total Quantum Tasks: ${viz.tasks.length}`)
-    console.log(`    🔗 Entangled Pairs: ${viz.tasks.filter(t => t.quantumState.entangled.length > 0).length}`)
-    console.log(`    🌟 Average Coherence: ${(viz.tasks.reduce((sum, t) => sum + t.quantumState.coherence, 0) / viz.tasks.length).toFixed(3)}`)
+    console.log(`    🔗 Entangled Pairs: ${viz.tasks.filter((t: any) => t.quantumState.entangled.length > 0).length}`)
+    console.log(`    🌟 Average Coherence: ${(viz.tasks.reduce((sum: number, t: any) => sum + t.quantumState.coherence, 0) / viz.tasks.length).toFixed(3)}`)
     
     console.log('  🌊 Interference Summary:')
     console.log(`    📡 Active Waves: ${interferenceViz.waves.length}`)
@@ -443,8 +444,7 @@ export class QuantumPlanningDemo {
 
   public dispose(): void {
     console.log('🧹 Cleaning up quantum planning demo...')
-    this.superpositionManager.dispose?.()
-    this.interferenceEngine.dispose?.()
+    // Note: QuantumSuperpositionManager and QuantumInterferenceEngine don't have dispose methods
     this.performanceOptimizer.dispose()
   }
 }
@@ -456,7 +456,7 @@ export async function runQuantumPlanningDemo(): Promise<void> {
   try {
     await demo.runDemo()
   } catch (error) {
-    console.error('❌ Demo failed:', error)
+    logger.error('QuantumPlanningDemo', 'Demo failed', { error })
   } finally {
     demo.dispose()
   }
@@ -467,7 +467,7 @@ if (typeof window === 'undefined' && require.main === module) {
   runQuantumPlanningDemo().then(() => {
     console.log('Demo completed successfully!')
   }).catch(error => {
-    console.error('Demo failed:', error)
+    logger.error('QuantumPlanningDemo', 'Demo execution failed', { error })
     process.exit(1)
   })
 }

@@ -13,6 +13,8 @@ export class TimeController extends EventEmitter {
   private currentFrame = 0
   private recording = true
   private lastRecordTime = 0
+  private recordInterval?: ReturnType<typeof setInterval>
+  private cleanupInterval?: ReturnType<typeof setInterval>
 
   constructor(config: TimeControlConfig) {
     super()
@@ -21,14 +23,14 @@ export class TimeController extends EventEmitter {
   }
 
   private startRecording(): void {
-    const recordInterval = setInterval(() => {
+    this.recordInterval = setInterval(() => {
       if (this.recording) {
         this.recordFrame()
       }
     }, this.config.recordInterval * 1000)
 
     // Clean up old frames
-    const cleanupInterval = setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanupOldFrames()
     }, 10000) // Every 10 seconds
   }
@@ -199,6 +201,17 @@ export class TimeController extends EventEmitter {
 
   dispose(): void {
     this.recording = false
+    
+    if (this.recordInterval) {
+      clearInterval(this.recordInterval)
+      this.recordInterval = undefined
+    }
+    
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+      this.cleanupInterval = undefined
+    }
+    
     this.history = []
     this.removeAllListeners()
   }

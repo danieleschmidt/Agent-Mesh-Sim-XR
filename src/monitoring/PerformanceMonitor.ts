@@ -34,7 +34,7 @@ export class PerformanceMonitor extends EventEmitter {
   private currentMetrics: Partial<PerformanceMetrics> = {}
   private thresholds: PerformanceThresholds
   private budget: PerformanceBudget
-  private monitoringInterval?: NodeJS.Timeout
+  private monitoringInterval?: ReturnType<typeof setInterval>
   private isMonitoring = false
   private lastFrameTime = 0
   private frameCount = 0
@@ -42,7 +42,7 @@ export class PerformanceMonitor extends EventEmitter {
 
   // Performance observers
   private performanceObserver?: PerformanceObserver
-  private memoryCheckInterval?: NodeJS.Timeout
+  private memoryCheckInterval?: ReturnType<typeof setInterval>
 
   constructor(
     thresholds: PerformanceThresholds = {

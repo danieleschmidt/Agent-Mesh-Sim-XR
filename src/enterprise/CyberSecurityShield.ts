@@ -429,7 +429,7 @@ export class CyberSecurityShield extends EventEmitter {
           errorHandler.handleError(
             error as Error,
             ErrorSeverity.HIGH,
-            { module: 'CyberSecurityShield', function: 'securityLoop' }
+            { module: 'CyberSecurityShield', function: 'securityLoop', timestamp: Date.now() }
           )
         }
         

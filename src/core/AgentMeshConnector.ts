@@ -5,8 +5,8 @@ import type { Agent, NetworkConfig } from '../types'
 export class AgentMeshConnector extends EventEmitter {
   private ws: WebSocket | null = null
   private config: NetworkConfig
-  private reconnectTimer: NodeJS.Timeout | null = null
-  private heartbeatTimer: NodeJS.Timeout | null = null
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null
   private reconnectAttempts = 0
   private isConnected = false
 
@@ -73,7 +73,7 @@ export class AgentMeshConnector extends EventEmitter {
 
   sendMessage(type: string, data: any): void {
     if (!this.isConnected || !this.ws) {
-      console.warn('Cannot send message: not connected')
+      this.emit('error', new Error('Cannot send message: not connected'))
       return
     }
 
