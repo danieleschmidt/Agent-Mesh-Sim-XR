@@ -3,13 +3,18 @@ import {
   WebGLRenderer, 
   Scene, 
   PerspectiveCamera, 
-  Vector3, 
   Color,
   AmbientLight,
   DirectionalLight,
   GridHelper
 } from 'three'
 import type { XRSessionConfig } from '../types'
+
+// XR types for TypeScript compatibility
+interface XRSessionInit {
+  requiredFeatures?: string[]
+  optionalFeatures?: string[]
+}
 
 interface XRManagerConfig {
   vrSupported: boolean
@@ -115,7 +120,7 @@ export class XRManager extends EventEmitter {
         this.isXRSupported = vrSupported || arSupported
         this.emit('xrSupportDetected', { vrSupported, arSupported })
       } catch (error) {
-        console.warn('XR support detection failed:', error)
+        this.emit('error', new Error(`XR support detection failed: ${error}`))
         this.isXRSupported = false
       }
     }
@@ -139,10 +144,12 @@ export class XRManager extends EventEmitter {
       
       await this.renderer.xr.setSession(this.xrSession)
       
-      this.xrSession.addEventListener('end', () => {
-        this.xrSession = null
-        this.emit('sessionEnd')
-      })
+      if (this.xrSession) {
+        this.xrSession.addEventListener('end', () => {
+          this.xrSession = null
+          this.emit('sessionEnd')
+        })
+      }
 
       this.emit('sessionStart', config)
     } catch (error) {

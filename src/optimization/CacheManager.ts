@@ -21,7 +21,7 @@ export interface CacheConfig {
 export class CacheManager<T = any> extends EventEmitter {
   private cache: Map<string, CacheEntry<T>> = new Map()
   private config: CacheConfig
-  private cleanupTimer: NodeJS.Timeout | null = null
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
   private currentMemoryUsage = 0
   private stats = {
     hits: 0,
@@ -231,9 +231,10 @@ export class CacheManager<T = any> extends EventEmitter {
           return entry.timestamp < oldestEntry.timestamp ? [key, entry] : oldest
         })[0]
 
-      case 'random':
+      case 'random': {
         const randomIndex = Math.floor(Math.random() * entries.length)
         return entries[randomIndex][0]
+      }
 
       default:
         return entries[0][0] // fallback to first entry

@@ -3,12 +3,9 @@ import {
   Group, 
   Mesh, 
   BoxGeometry, 
-  MeshBasicMaterial, 
-  PlaneGeometry,
+  MeshLambertMaterial, 
   Vector3,
-  Color,
-  Raycaster,
-  Camera
+  Color
 } from 'three'
 import type { CausalEvent } from '../types'
 
@@ -29,12 +26,10 @@ interface TimelineEvent {
 export class TimelineVR extends EventEmitter {
   private config: TimelineVRConfig
   private group: Group
-  private timelineBar: Mesh
+  private timelineBar!: Mesh
   private events: TimelineEvent[] = []
-  private currentTimeMarker: Mesh
+  private currentTimeMarker!: Mesh
   private timeRange: { start: number; end: number }
-  private raycaster = new Raycaster()
-  private isInteracting = false
 
   constructor(config: TimelineVRConfig) {
     super()
@@ -53,7 +48,7 @@ export class TimelineVR extends EventEmitter {
 
   private createTimelineBar(): void {
     const geometry = new BoxGeometry(this.config.length, 0.05, 0.2)
-    const material = new MeshBasicMaterial({ color: 0x333333 })
+    const material = new MeshLambertMaterial({ color: 0x333333 })
     
     this.timelineBar = new Mesh(geometry, material)
     this.timelineBar.userData = { type: 'timeline-bar' }
@@ -66,7 +61,7 @@ export class TimelineVR extends EventEmitter {
   private createTimeScaleMarkers(): void {
     const markerCount = 10
     const markerGeometry = new BoxGeometry(0.02, 0.1, 0.02)
-    const markerMaterial = new MeshBasicMaterial({ color: 0x666666 })
+    const markerMaterial = new MeshLambertMaterial({ color: 0x666666 })
     
     for (let i = 0; i <= markerCount; i++) {
       const marker = new Mesh(markerGeometry, markerMaterial)
@@ -78,7 +73,7 @@ export class TimelineVR extends EventEmitter {
 
   private createTimeMarker(): void {
     const geometry = new BoxGeometry(0.05, this.config.height, 0.05)
-    const material = new MeshBasicMaterial({ color: 0xff0000 })
+    const material = new MeshLambertMaterial({ color: 0xff0000 })
     
     this.currentTimeMarker = new Mesh(geometry, material)
     this.currentTimeMarker.position.y = this.config.height / 2
@@ -120,7 +115,7 @@ export class TimelineVR extends EventEmitter {
     const color = this.getEventColor(event)
     
     const geometry = new BoxGeometry(size, size, size)
-    const material = new MeshBasicMaterial({ color })
+    const material = new MeshLambertMaterial({ color })
     
     const mesh = new Mesh(geometry, material)
     mesh.userData = { 
@@ -177,7 +172,7 @@ export class TimelineVR extends EventEmitter {
     this.on('scrub', callback)
   }
 
-  handleControllerInteraction(controllerPosition: Vector3, camera: Camera): void {
+  handleControllerInteraction(controllerPosition: Vector3): void {
     // Convert controller position to timeline local space
     const localPosition = this.group.worldToLocal(controllerPosition.clone())
     
@@ -189,12 +184,11 @@ export class TimelineVR extends EventEmitter {
       const timestamp = this.positionToTimestamp(localPosition.x)
       this.updateTimeMarkerPosition(timestamp)
       this.emit('scrub', timestamp)
-      this.isInteracting = true
     }
   }
 
   handleControllerEnd(): void {
-    this.isInteracting = false
+    // Handle controller end interaction
   }
 
   setTimeRange(start: number, end: number): void {
@@ -232,7 +226,7 @@ export class TimelineVR extends EventEmitter {
 
   highlightEventsByAgent(agentId: string): void {
     this.events.forEach(timelineEvent => {
-      const material = timelineEvent.mesh.material as MeshBasicMaterial
+      const material = timelineEvent.mesh.material as MeshLambertMaterial
       
       if (timelineEvent.event.agentId === agentId) {
         material.color = new Color(0xffff00) // Yellow highlight
@@ -246,7 +240,7 @@ export class TimelineVR extends EventEmitter {
 
   highlightEventsByType(eventType: string): void {
     this.events.forEach(timelineEvent => {
-      const material = timelineEvent.mesh.material as MeshBasicMaterial
+      const material = timelineEvent.mesh.material as MeshLambertMaterial
       
       if (timelineEvent.event.type === eventType) {
         material.color = new Color(0xffff00) // Yellow highlight
@@ -260,7 +254,7 @@ export class TimelineVR extends EventEmitter {
 
   clearHighlights(): void {
     this.events.forEach(timelineEvent => {
-      const material = timelineEvent.mesh.material as MeshBasicMaterial
+      const material = timelineEvent.mesh.material as MeshLambertMaterial
       material.color = new Color(timelineEvent.mesh.userData.originalColor)
       material.emissive = new Color(0x000000)
     })
