@@ -64,7 +64,7 @@ export class SpatialInspector extends EventEmitter {
     // Close oldest panel if at max capacity
     if (this.panels.size >= this.config.maxPanels) {
       const oldestId = this.panels.keys().next().value
-      this.closePanel(oldestId)
+      if (oldestId) this.closePanel(oldestId)
     }
 
     const panel = this.createAgentPanel(agent)

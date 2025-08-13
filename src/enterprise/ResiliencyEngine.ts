@@ -229,7 +229,7 @@ export class ResiliencyEngine extends EventEmitter {
     const strategies = this.getAvailableRecoveryStrategies(failure)
     
     if (strategies.length === 0) {
-      logger.error('ResiliencyEngine', 'No recovery strategies available', {
+      logger.error('ResiliencyEngine', 'No recovery strategies available', undefined, {
         failure_id: failure.id,
         component: failure.component
       })
@@ -288,7 +288,7 @@ export class ResiliencyEngine extends EventEmitter {
           success = await this.quarantineComponent(action.target_component)
           break
         default:
-          logger.error('ResiliencyEngine', 'Unknown recovery action type', {
+          logger.error('ResiliencyEngine', 'Unknown recovery action type', undefined, {
             type: action.action_type
           })
           success = false
@@ -302,10 +302,7 @@ export class ResiliencyEngine extends EventEmitter {
           component: action.target_component
         })
       } else {
-        logger.error('ResiliencyEngine', 'Recovery action failed', {
-          action_id: action.id,
-          component: action.target_component
-        })
+        logger.error('ResiliencyEngine', `Recovery action ${action.id} failed for component ${action.target_component}`)
       }
       
       return success
@@ -318,7 +315,7 @@ export class ResiliencyEngine extends EventEmitter {
         { 
           module: 'ResiliencyEngine',
           function: 'executeRecoveryAction',
-          action_id: action.id
+          timestamp: Date.now()
         }
       )
       return false
@@ -419,10 +416,7 @@ export class ResiliencyEngine extends EventEmitter {
       }
       
     } catch (error) {
-      logger.error('ResiliencyEngine', 'Chaos test failed', {
-        test_type: chaosTest.type,
-        error: (error as Error).message
-      })
+      logger.error('ResiliencyEngine', `Chaos test failed for ${chaosTest.type}: ${(error as Error).message}`)
     }
   }
 
@@ -603,7 +597,7 @@ export class ResiliencyEngine extends EventEmitter {
   stopResiliencyMonitoring(): void {
     this.isMonitoring = false
     if (this.healthCheckTimer) {
-      clearInterval(this.healthCheckTimer)
+      clearInterval(this.healthCheckTimer as NodeJS.Timeout)
       this.healthCheckTimer = null
     }
     this.backupScheduler.stop()

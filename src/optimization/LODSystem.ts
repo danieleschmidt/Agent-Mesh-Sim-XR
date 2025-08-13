@@ -34,11 +34,12 @@ export class LODSystem extends EventEmitter {
   constructor(config: LODSystemConfig) {
     super()
     this.config = {
-      updateInterval: 100, // 10 Hz default
-      frustumCulling: true,
-      occlusionCulling: false,
-      adaptiveQuality: true,
-      ...config
+      updateInterval: config.updateInterval ?? 100, // 10 Hz default
+      frustumCulling: config.frustumCulling ?? true,
+      occlusionCulling: config.occlusionCulling ?? false,
+      adaptiveQuality: config.adaptiveQuality ?? true,
+      levels: config.levels,
+      priorityFunction: config.priorityFunction
     }
 
     // Sort LOD levels by distance

@@ -18,6 +18,14 @@ export interface CacheConfig {
   evictionPolicy: 'lru' | 'lfu' | 'fifo' | 'random'
 }
 
+export interface CacheStats {
+  hits: number
+  misses: number
+  sets: number
+  evictions: number
+  memoryCleanups: number
+}
+
 export class CacheManager<T = any> extends EventEmitter {
   private cache: Map<string, CacheEntry<T>> = new Map()
   private config: CacheConfig
@@ -28,7 +36,7 @@ export class CacheManager<T = any> extends EventEmitter {
     misses: 0,
     sets: 0,
     evictions: 0,
-    cleanups: 0
+    memoryCleanups: 0
   }
 
   constructor(config: CacheConfig) {
@@ -283,7 +291,7 @@ export class CacheManager<T = any> extends EventEmitter {
     const cleanedCount = this.deleteMany(expiredKeys)
     
     if (cleanedCount > 0) {
-      this.stats.cleanups++
+      this.stats.memoryCleanups++
       this.emit('cleanup', { expiredEntries: cleanedCount })
     }
   }
@@ -310,7 +318,7 @@ export class CacheManager<T = any> extends EventEmitter {
     size: number
     memoryUsage: number
     maxMemory?: number
-    stats: typeof this.stats
+    stats: CacheStats
     config: CacheConfig
   } {
     const totalRequests = this.stats.hits + this.stats.misses

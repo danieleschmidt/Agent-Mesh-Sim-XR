@@ -62,7 +62,7 @@ export class AdvancedMonitoring extends EventEmitter {
     this.collectionInterval = config?.collectionInterval || 1000 // 1 second
     this.alertEvaluationInterval = config?.alertEvaluationInterval || 5000 // 5 seconds
     this.initializeDefaultMetrics()
-    logger.info('AdvancedMonitoring initialized')
+    logger.info('AdvancedMonitoring', 'Advanced monitoring system initialized')
   }
 
   private initializeDefaultMetrics(): void {
@@ -227,13 +227,13 @@ export class AdvancedMonitoring extends EventEmitter {
       this.metrics.set(config.id, new Metric(config))
     }
     
-    logger.info('Metric defined', { id: config.id, name: config.name })
+    logger.info('AdvancedMonitoring', 'Metric defined', { id: config.id, name: config.name })
   }
 
   public recordMetric(id: string, value: number, tags?: Record<string, string>): void {
     const metric = this.metrics.get(id)
     if (!metric) {
-      logger.warn('Metric not found', { id })
+      logger.warn('AdvancedMonitoring', 'Metric not found', { id })
       return
     }
 
@@ -442,7 +442,7 @@ export class AdvancedMonitoring extends EventEmitter {
   public collectAgentMetrics(agents: Agent[]): void {
     this.setGauge('agents_total', agents.length)
     
-    const failedAgents = agents.filter(agent => agent.state === 'failed').length
+    const failedAgents = agents.filter(agent => agent.currentState.status === 'error').length
     this.setGauge('agents_failed', failedAgents)
   }
 
@@ -472,7 +472,7 @@ export class AdvancedMonitoring extends EventEmitter {
 
   public start(): void {
     if (this.isRunning) {
-      logger.warn('AdvancedMonitoring already running')
+      logger.warn('AdvancedMonitoring', 'System already running')
       return
     }
 
@@ -488,13 +488,13 @@ export class AdvancedMonitoring extends EventEmitter {
       this.evaluateAlerts()
     }, this.alertEvaluationInterval)
 
-    logger.info('AdvancedMonitoring started')
+    logger.info('AdvancedMonitoring', 'Monitoring system started')
     this.emit('started')
   }
 
   public stop(): void {
     this.isRunning = false
-    logger.info('AdvancedMonitoring stopped')
+    logger.info('AdvancedMonitoring', 'Monitoring system stopped')
     this.emit('stopped')
   }
 
@@ -533,7 +533,7 @@ export class AdvancedMonitoring extends EventEmitter {
     this.activeAlerts.clear()
     this.alertHistory.splice(0)
     this.removeAllListeners()
-    logger.info('AdvancedMonitoring disposed')
+    logger.info('AdvancedMonitoring', 'System disposed')
   }
 }
 
