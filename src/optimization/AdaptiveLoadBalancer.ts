@@ -48,7 +48,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
   constructor() {
     super()
     this.initializeStrategies()
-    logger.info('AdaptiveLoadBalancer initialized')
+    logger.info('AdaptiveLoadBalancer', 'Load balancer initialized')
   }
 
   private initializeStrategies(): void {
@@ -197,7 +197,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
     if (node) {
       node.status = status
       node.lastHeartbeat = Date.now()
-      logger.debug('Node status updated', { id: nodeId, status })
+      logger.debug('AdaptiveLoadBalancer', 'Node status updated', { id: nodeId, status })
     }
   }
 
@@ -353,7 +353,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
     // Keep only recent completed tasks (last 1000)
     if (this.completedTasks.size > 1000) {
       const oldestKey = this.completedTasks.keys().next().value
-      this.completedTasks.delete(oldestKey)
+      if (oldestKey) this.completedTasks.delete(oldestKey)
     }
 
     logger.info('Task completed', { 
@@ -525,7 +525,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
 
   public start(): void {
     if (this.isRunning) {
-      logger.warn('AdaptiveLoadBalancer already running')
+      logger.warn('AdaptiveLoadBalancer', 'System already running')
       return
     }
 
@@ -541,7 +541,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
       this.performHealthChecks()
     }, 10000) // Health check every 10 seconds
 
-    logger.info('AdaptiveLoadBalancer started')
+    logger.info('AdaptiveLoadBalancer', 'Load balancer started')
     this.emit('started')
   }
 
@@ -560,7 +560,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
       this.healthCheckInterval = null
     }
 
-    logger.info('AdaptiveLoadBalancer stopped')
+    logger.info('AdaptiveLoadBalancer', 'Load balancer stopped')
     this.emit('stopped')
   }
 
@@ -572,7 +572,7 @@ export class AdaptiveLoadBalancer extends EventEmitter {
     this.completedTasks.clear()
     this.strategies.clear()
     this.removeAllListeners()
-    logger.info('AdaptiveLoadBalancer disposed')
+    logger.info('AdaptiveLoadBalancer', 'System disposed')
   }
 }
 

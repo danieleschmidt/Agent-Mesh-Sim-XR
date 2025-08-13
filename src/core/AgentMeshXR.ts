@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3'
 import { XRManager } from './XRManager'
 import { AgentMeshConnector } from './AgentMeshConnector'
-import { SwarmVisualizer } from '../visualization/SwarmVisualizer'
+import { SimpleSwarmVisualizer as SwarmVisualizer } from '../visualization/SimpleSwarmVisualizer'
 import { TimeController } from '../debugging/TimeController'
 import { PerformanceMonitor } from '../monitoring/PerformanceMonitor'
 import { SecurityManager } from '../security/SecurityManager'
@@ -64,7 +64,13 @@ export class AgentMeshXR extends EventEmitter {
       })
       
       this.connector = new AgentMeshConnector(config.networkConfig)
-      this.swarmVisualizer = new SwarmVisualizer(this.xrManager.getScene())
+      this.swarmVisualizer = new SwarmVisualizer(this.xrManager.getScene(), {
+        agentModel: 'geometric',
+        colorScheme: 'byState',
+        trailLength: 50,
+        clusterDetection: false,
+        lodEnabled: false
+      })
       
       this.setupEventListeners()
       this.setupErrorRecovery()

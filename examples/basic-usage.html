@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Mesh XR - Basic Usage Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #005a9e;
+        }
+        
+        button:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .metrics {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+        
+        #renderTarget {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h3>Agent Mesh XR Controls</h3>
+            
+            <div class="control-group">
+                <button id="initXR">Initialize XR</button>
+                <button id="startVR" disabled>Start VR</button>
+                <button id="connect" disabled>Connect to Agent Mesh</button>
+            </div>
+            
+            <div class="control-group">
+                <button id="addAgent" disabled>Add Agent</button>
+                <button id="addMultiple" disabled>Add 10 Agents</button>
+                <button id="removeAll" disabled>Remove All</button>
+            </div>
+            
+            <div class="control-group">
+                <button id="enableCausal" disabled>Enable Causal Tracing</button>
+                <button id="startRecording" disabled>Start Recording</button>
+            </div>
+            
+            <div class="status">
+                <div id="connectionStatus">Status: Not connected</div>
+                <div id="agentCount">Agents: 0</div>
+                <div id="xrStatus">XR: Not initialized</div>
+            </div>
+        </div>
+        
+        <div class="metrics">
+            <h3>Performance Metrics</h3>
+            <div id="fps">FPS: --</div>
+            <div id="memory">Memory: --</div>
+            <div id="latency">Latency: --</div>
+            <div id="renderTime">Render Time: --</div>
+        </div>
+    </div>
+    
+    <canvas id="renderTarget"></canvas>
+    
+    <script type="module">
+        import { AgentMeshXR } from '../dist/agent-mesh-xr.mjs'
+        import { Vector3 } from 'https://unpkg.com/three@0.160.0/build/three.module.js'
+        
+        let xrSim = null
+        let agentCount = 0
+        let isConnected = false
+        
+        // DOM elements
+        const initXRBtn = document.getElementById('initXR')
+        const startVRBtn = document.getElementById('startVR')
+        const connectBtn = document.getElementById('connect')
+        const addAgentBtn = document.getElementById('addAgent')
+        const addMultipleBtn = document.getElementById('addMultiple')
+        const removeAllBtn = document.getElementById('removeAll')
+        const enableCausalBtn = document.getElementById('enableCausal')
+        const startRecordingBtn = document.getElementById('startRecording')
+        
+        const connectionStatus = document.getElementById('connectionStatus')
+        const agentCountEl = document.getElementById('agentCount')
+        const xrStatus = document.getElementById('xrStatus')
+        const fpsEl = document.getElementById('fps')
+        const memoryEl = document.getElementById('memory')
+        const latencyEl = document.getElementById('latency')
+        const renderTimeEl = document.getElementById('renderTime')
+        
+        // Initialize XR System
+        initXRBtn.addEventListener('click', async () => {
+            try {
+                xrSim = new AgentMeshXR({
+                    maxAgents: 1000,
+                    physicsEngine: 'cannon',
+                    renderMode: 'instanced',
+                    vrSupport: true,
+                    arSupport: true
+                })
+                
+                // Setup event listeners
+                xrSim.on('agentAdded', (agent) => {
+                    agentCount++
+                    updateUI()
+                })
+                
+                xrSim.on('agentRemoved', (agentId) => {
+                    agentCount--
+                    updateUI()
+                })
+                
+                xrSim.on('performanceUpdate', (metrics) => {
+                    fpsEl.textContent = `FPS: ${metrics.fps.toFixed(1)}`
+                    memoryEl.textContent = `Memory: ${(metrics.memoryUsage / 1024 / 1024).toFixed(1)}MB`
+                    renderTimeEl.textContent = `Render: ${metrics.renderTime.toFixed(1)}ms`
+                })
+                
+                xrStatus.textContent = 'XR: Initialized'
+                startVRBtn.disabled = false
+                connectBtn.disabled = false
+                initXRBtn.disabled = true
+                
+                console.log('Agent Mesh XR initialized successfully')
+                
+            } catch (error) {
+                console.error('Failed to initialize XR:', error)
+                xrStatus.textContent = 'XR: Error - ' + error.message
+            }
+        })
+        
+        // Start VR Session
+        startVRBtn.addEventListener('click', async () => {
+            try {
+                await xrSim.startXR('immersive-vr')
+                xrStatus.textContent = 'XR: VR Session Active'
+                console.log('VR session started')
+            } catch (error) {
+                console.error('Failed to start VR:', error)
+                xrStatus.textContent = 'XR: VR Failed - ' + error.message
+            }
+        })
+        
+        // Connect to Agent Mesh
+        connectBtn.addEventListener('click', async () => {
+            try {
+                // For demo purposes, simulate connection
+                // In production: await xrSim.connect('ws://agent-mesh.local:8080')
+                connectionStatus.textContent = 'Status: Connected (Simulated)'
+                isConnected = true
+                addAgentBtn.disabled = false
+                addMultipleBtn.disabled = false
+                removeAllBtn.disabled = false
+                enableCausalBtn.disabled = false
+                startRecordingBtn.disabled = false
+                connectBtn.disabled = true
+                
+                console.log('Connected to agent mesh (simulated)')
+                
+            } catch (error) {
+                console.error('Failed to connect:', error)
+                connectionStatus.textContent = 'Status: Connection Failed'
+            }
+        })
+        
+        // Add single agent
+        addAgentBtn.addEventListener('click', () => {
+            addRandomAgent()
+        })
+        
+        // Add multiple agents
+        addMultipleBtn.addEventListener('click', () => {
+            for (let i = 0; i < 10; i++) {
+                addRandomAgent()
+            }
+        })
+        
+        // Remove all agents
+        removeAllBtn.addEventListener('click', () => {
+            xrSim.clearAgents()
+            agentCount = 0
+            updateUI()
+        })
+        
+        // Enable causal tracing
+        enableCausalBtn.addEventListener('click', () => {
+            xrSim.enableTimeControl({
+                maxRewind: 3600,
+                recordInterval: 0.1,
+                causalTracking: true
+            })
+            
+            enableCausalBtn.textContent = 'Causal Tracing Enabled'
+            enableCausalBtn.disabled = true
+            console.log('Causal tracing enabled')
+        })
+        
+        // Start recording
+        startRecordingBtn.addEventListener('click', () => {
+            // Simulate recording start
+            startRecordingBtn.textContent = 'Recording...'
+            startRecordingBtn.style.background = '#dc3545'
+            console.log('Started recording simulation')
+        })
+        
+        // Helper function to add random agent
+        function addRandomAgent() {
+            if (!xrSim) return
+            
+            const agent = {
+                id: `agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                type: Math.random() > 0.5 ? 'worker' : 'explorer',
+                position: new Vector3(
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 10
+                ),
+                velocity: new Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                ),
+                currentState: {
+                    status: Math.random() > 0.1 ? 'active' : 'idle',
+                    behavior: ['explore', 'collect', 'communicate'][Math.floor(Math.random() * 3)],
+                    role: ['worker', 'leader', 'scout'][Math.floor(Math.random() * 3)],
+                    energy: Math.random(),
+                    priority: Math.floor(Math.random() * 10)
+                },
+                metadata: {
+                    createdAt: Date.now(),
+                    version: '1.0.0'
+                },
+                activeGoals: ['explore'],
+                connectedPeers: [],
+                metrics: {
+                    cpuMs: Math.random() * 100,
+                    memoryMB: Math.random() * 200,
+                    msgPerSec: Math.random() * 50,
+                    uptime: Math.random() * 10000
+                },
+                lastUpdate: Date.now()
+            }
+            
+            xrSim.addAgent(agent)
+            
+            // Simulate agent movement
+            setTimeout(() => {
+                agent.position.add(new Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                ))
+                
+                xrSim.updateAgent(agent)
+            }, 1000 + Math.random() * 2000)
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            agentCountEl.textContent = `Agents: ${agentCount}`
+        }
+        
+        // Simulate performance metrics
+        setInterval(() => {
+            if (xrSim) {
+                latencyEl.textContent = `Latency: ${(Math.random() * 50 + 10).toFixed(1)}ms`
+            }
+        }, 1000)
+        
+        // Check WebXR support
+        if ('xr' in navigator) {
+            console.log('WebXR is supported!')
+        } else {
+            console.warn('WebXR is not supported in this browser')
+            xrStatus.textContent = 'XR: Not supported in this browser'
+        }
+        
+        console.log('Agent Mesh XR Demo loaded')
+    </script>
+</body>
+</html>

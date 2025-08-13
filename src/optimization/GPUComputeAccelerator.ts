@@ -383,13 +383,13 @@ export class GPUComputeAccelerator extends EventEmitter {
         this.emit('jobFailed', { 
           jobId: job.id, 
           kernelId: job.kernelId, 
-          error: error.message 
+          error: (error as Error).message 
         })
       }
     }
 
     this.isProcessing = false
-    logger.info('GPU compute queue processing completed')
+    logger.info('GPUComputeAccelerator', 'Queue processing completed')
   }
 
   private async executeJob(job: ComputeJob): Promise<DataTexture> {
@@ -430,16 +430,20 @@ export class GPUComputeAccelerator extends EventEmitter {
         kernel.textureSize.width * kernel.textureSize.height * 4
       )
       
-      this.renderer.readRenderTargetPixels(
-        renderTarget,
-        0, 0,
-        kernel.textureSize.width,
-        kernel.textureSize.height,
-        pixels
-      )
+      if (renderTarget) {
+        this.renderer.readRenderTargetPixels(
+          renderTarget,
+          0, 0,
+          kernel.textureSize.width,
+          kernel.textureSize.height,
+          pixels
+        )
+      }
 
       // Update output texture
-      outputTexture.image.data = pixels
+      if (outputTexture.image) {
+        (outputTexture.image as any).data = pixels
+      }
       outputTexture.needsUpdate = true
 
     } finally {
@@ -475,13 +479,13 @@ export class GPUComputeAccelerator extends EventEmitter {
   }
 
   public createPositionTexture(positions: Float32Array, width: number, height: number): DataTexture {
-    const texture = new DataTexture(positions, width, height, RGBAFormat, FloatType)
+    const texture = new DataTexture(positions as any, width, height, RGBAFormat, FloatType)
     texture.needsUpdate = true
     return texture
   }
 
   public createVelocityTexture(velocities: Float32Array, width: number, height: number): DataTexture {
-    const texture = new DataTexture(velocities, width, height, RGBAFormat, FloatType)
+    const texture = new DataTexture(velocities as any, width, height, RGBAFormat, FloatType)
     texture.needsUpdate = true
     return texture
   }
@@ -540,7 +544,7 @@ export class GPUComputeAccelerator extends EventEmitter {
 
   public clearQueue(): void {
     this.jobQueue.splice(0)
-    logger.info('GPU compute queue cleared')
+    logger.info('GPUComputeAccelerator', 'Compute queue cleared')
   }
 
   public isComputeSupported(): boolean {
@@ -566,7 +570,7 @@ export class GPUComputeAccelerator extends EventEmitter {
     this.kernels.clear()
     this.scene.clear()
     this.removeAllListeners()
-    logger.info('GPUComputeAccelerator disposed')
+    logger.info('GPUComputeAccelerator', 'System disposed')
   }
 }
 

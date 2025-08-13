@@ -94,16 +94,34 @@ export class Logger {
     }
   }
 
-  error(module: string, message: string, error?: Error, data?: any): void {
-    this.log(LogLevel.ERROR, module, message, data, error)
+  error(module: string, message: string, error?: Error, data?: any): void
+  error(module: string, message: any, data?: any): void
+  error(module: string, message: string | any, errorOrData?: Error | any, data?: any): void {
+    if (typeof message === 'object') {
+      this.log(LogLevel.ERROR, module, JSON.stringify(message), errorOrData)
+    } else {
+      this.log(LogLevel.ERROR, module, message, data, errorOrData as Error)
+    }
   }
 
-  warn(module: string, message: string, data?: any): void {
-    this.log(LogLevel.WARN, module, message, data)
+  warn(module: string, message: string, data?: any): void
+  warn(module: string, message: any, data?: any): void
+  warn(module: string, message: string | any, data?: any): void {
+    if (typeof message === 'object') {
+      this.log(LogLevel.WARN, module, JSON.stringify(message), data)
+    } else {
+      this.log(LogLevel.WARN, module, message, data)
+    }
   }
 
-  info(module: string, message: string, data?: any): void {
-    this.log(LogLevel.INFO, module, message, data)
+  info(module: string, message: string, data?: any): void
+  info(module: string, message: any, data?: any): void
+  info(module: string, message: string | any, data?: any): void {
+    if (typeof message === 'object') {
+      this.log(LogLevel.INFO, module, JSON.stringify(message), data)
+    } else {
+      this.log(LogLevel.INFO, module, message, data)
+    }
   }
 
   debug(module: string, message: string, data?: any): void {

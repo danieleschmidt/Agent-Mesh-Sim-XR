@@ -13,9 +13,9 @@ import {
   Line,
   Camera
 } from 'three'
-import { LODSystem } from '../optimization/LODSystem'
-import { AgentCache } from '../optimization/CacheManager'
-import { AgentUpdateBatcher } from '../optimization/BatchProcessor'
+// import { LODSystem } from '../optimization/LODSystem'
+// import { AgentCache } from '../optimization/CacheManager'
+// import { AgentUpdateBatcher } from '../optimization/BatchProcessor'
 import { logger } from '../utils/Logger'
 import type { Agent, SwarmVisualizationConfig } from '../types'
 
@@ -27,7 +27,7 @@ export class SwarmVisualizer {
   private instancedMesh?: InstancedMesh
   private config: SwarmVisualizationConfig
   private agentPositions: Map<string, Vector3[]> = new Map()
-  private lodSystem: LODSystem
+  // private lodSystem: LODSystem
   private cache: AgentCache
   private updateBatcher: AgentUpdateBatcher
   private camera: Camera | null = null
