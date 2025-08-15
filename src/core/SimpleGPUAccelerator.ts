@@ -36,7 +36,7 @@ export class SimpleGPUAccelerator {
     this.config = {
       maxBatchSize: 100,
       enableInstancing: true,
-      useWebWorkers: typeof Worker !== 'undefined',
+      useWebWorkers: typeof Worker !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL !== 'undefined',
       workerCount: Math.min(navigator.hardwareConcurrency || 4, 8),
       ...config
     }

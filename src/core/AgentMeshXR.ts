@@ -28,7 +28,7 @@ export class AgentMeshXR extends EventEmitter {
   private agents: Map<string, Agent> = new Map()
   private isRunning = false
   private sessionId: string
-  private healthCheckInterval?: NodeJS.Timeout
+  private healthCheckInterval?: number
   private lastHealthCheck = 0
   private consecutiveFailures = 0
   private maxConsecutiveFailures = 3
@@ -367,7 +367,7 @@ export class AgentMeshXR extends EventEmitter {
   private startHealthCheck(): void {
     this.healthCheckInterval = setInterval(() => {
       this.performHealthCheck()
-    }, 10000) // Check every 10 seconds
+    }, 10000) as unknown as number // Check every 10 seconds
   }
 
   private async performHealthCheck(): Promise<void> {
