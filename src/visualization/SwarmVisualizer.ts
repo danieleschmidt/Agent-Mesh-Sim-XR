@@ -13,9 +13,9 @@ import {
   Line,
   Camera
 } from 'three'
-// import { LODSystem } from '../optimization/LODSystem'
-// import { AgentCache } from '../optimization/CacheManager'
-// import { AgentUpdateBatcher } from '../optimization/BatchProcessor'
+import { LODSystem } from '../optimization/LODSystem'
+import { CacheManager } from '../optimization/CacheManager'
+import { BatchProcessor } from '../optimization/BatchProcessor'
 import { logger } from '../utils/Logger'
 import type { Agent, SwarmVisualizationConfig } from '../types'
 
@@ -27,9 +27,9 @@ export class SwarmVisualizer {
   private instancedMesh?: InstancedMesh
   private config: SwarmVisualizationConfig
   private agentPositions: Map<string, Vector3[]> = new Map()
-  // private lodSystem: LODSystem
-  private cache: AgentCache
-  private updateBatcher: AgentUpdateBatcher
+  private lodSystem?: LODSystem
+  private cache?: CacheManager
+  private updateBatcher?: BatchProcessor
   private camera: Camera | null = null
   private lastUpdateTime = 0
 
@@ -48,35 +48,42 @@ export class SwarmVisualizer {
     }
 
     // Initialize optimization systems
-    this.cache = new AgentCache({
-      maxSize: 5000,
-      defaultTTL: 30000 // 30 seconds
-    })
+    try {
+      this.cache = new CacheManager({
+        maxSize: 5000,
+        defaultTTL: 30000, // 30 seconds
+        evictionPolicy: 'lru'
+      })
 
-    this.lodSystem = new LODSystem({
-      levels: [
-        { distance: 5, model: 'high-poly', animations: true, trails: true, stateIndicators: true, updateRate: 60, geometryComplexity: 1.0, textureResolution: 512 },
-        { distance: 20, model: 'medium-poly', animations: true, trails: false, stateIndicators: true, updateRate: 30, geometryComplexity: 0.6, textureResolution: 256 },
-        { distance: 50, model: 'low-poly', animations: false, trails: false, stateIndicators: false, updateRate: 10, geometryComplexity: 0.3, textureResolution: 128 },
-        { distance: 100, model: 'billboard', animations: false, trails: false, stateIndicators: false, updateRate: 5, geometryComplexity: 0.1, textureResolution: 64 },
-        { distance: Infinity, model: 'culled', animations: false, trails: false, stateIndicators: false, updateRate: 1, geometryComplexity: 0, textureResolution: 0 }
-      ],
-      updateInterval: 100,
-      frustumCulling: true,
-      occlusionCulling: false,
-      adaptiveQuality: true
-    })
-
-    this.updateBatcher = new AgentUpdateBatcher(
-      async (agents: Agent[]) => {
-        this.processBatchedUpdates(agents)
-      },
-      {
-        maxBatchSize: 100,
-        flushInterval: 16, // ~60fps
-        maxWaitTime: 33
+      if (this.config.lodEnabled) {
+        this.lodSystem = new LODSystem({
+          levels: [
+            { distance: 5, model: 'high-poly', animations: true, trails: true, stateIndicators: true, updateRate: 60, geometryComplexity: 1.0, textureResolution: 512 },
+            { distance: 20, model: 'medium-poly', animations: true, trails: false, stateIndicators: true, updateRate: 30, geometryComplexity: 0.6, textureResolution: 256 },
+            { distance: 50, model: 'low-poly', animations: false, trails: false, stateIndicators: false, updateRate: 10, geometryComplexity: 0.3, textureResolution: 128 },
+            { distance: 100, model: 'billboard', animations: false, trails: false, stateIndicators: false, updateRate: 5, geometryComplexity: 0.1, textureResolution: 64 },
+            { distance: Infinity, model: 'culled', animations: false, trails: false, stateIndicators: false, updateRate: 1, geometryComplexity: 0, textureResolution: 0 }
+          ],
+          updateInterval: 100,
+          frustumCulling: true,
+          occlusionCulling: false,
+          adaptiveQuality: true
+        })
       }
-    )
+
+      this.updateBatcher = new BatchProcessor(
+        async (agents: Agent[]) => {
+          this.processBatchedUpdates(agents)
+        },
+        {
+          maxBatchSize: 100,
+          flushInterval: 16, // ~60fps
+          maxWaitTime: 33
+        }
+      )
+    } catch (error) {
+      logger.warn('SwarmVisualizer', 'Failed to initialize optimization systems, falling back to basic mode', { error })
+    }
     
     this.setupInstancedRendering()
     this.setupEventListeners()
