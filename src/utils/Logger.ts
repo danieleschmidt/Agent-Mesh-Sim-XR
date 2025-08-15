@@ -10,7 +10,7 @@ interface LogEntry {
   level: LogLevel
   module: string
   message: string
-  data?: any
+  data?: unknown
   error?: Error
 }
 
@@ -45,7 +45,7 @@ export class Logger {
     }
   }
 
-  private log(level: LogLevel, module: string, message: string, data?: any, error?: Error): void {
+  private log(level: LogLevel, module: string, message: string, data?: unknown, error?: Error): void {
     if (level > this.logLevel) return
 
     const entry: LogEntry = {
@@ -94,37 +94,31 @@ export class Logger {
     }
   }
 
-  error(module: string, message: string, error?: Error, data?: any): void
-  error(module: string, message: any, data?: any): void
-  error(module: string, message: string | any, errorOrData?: Error | any, data?: any): void {
+  error(module: string, message: string | unknown, errorOrData?: Error | unknown, data?: unknown): void {
     if (typeof message === 'object') {
       this.log(LogLevel.ERROR, module, JSON.stringify(message), errorOrData)
     } else {
-      this.log(LogLevel.ERROR, module, message, data, errorOrData as Error)
+      this.log(LogLevel.ERROR, module, message as string, data, errorOrData as Error)
     }
   }
 
-  warn(module: string, message: string, data?: any): void
-  warn(module: string, message: any, data?: any): void
-  warn(module: string, message: string | any, data?: any): void {
+  warn(module: string, message: string | unknown, data?: unknown): void {
     if (typeof message === 'object') {
       this.log(LogLevel.WARN, module, JSON.stringify(message), data)
     } else {
-      this.log(LogLevel.WARN, module, message, data)
+      this.log(LogLevel.WARN, module, message as string, data)
     }
   }
 
-  info(module: string, message: string, data?: any): void
-  info(module: string, message: any, data?: any): void
-  info(module: string, message: string | any, data?: any): void {
+  info(module: string, message: string | unknown, data?: unknown): void {
     if (typeof message === 'object') {
       this.log(LogLevel.INFO, module, JSON.stringify(message), data)
     } else {
-      this.log(LogLevel.INFO, module, message, data)
+      this.log(LogLevel.INFO, module, message as string, data)
     }
   }
 
-  debug(module: string, message: string, data?: any): void {
+  debug(module: string, message: string, data?: unknown): void {
     this.log(LogLevel.DEBUG, module, message, data)
   }
 

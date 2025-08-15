@@ -4,7 +4,6 @@ import {
   Mesh,
   SphereGeometry,
   MeshLambertMaterial,
-  Vector3,
   Color
 } from 'three'
 import { logger } from '../utils/Logger'
