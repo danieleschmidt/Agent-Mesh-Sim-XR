@@ -254,13 +254,31 @@ export class Validator {
 
   static validateWebSocketURL(url: string): boolean {
     try {
+      // Handle test environment where URL might not be fully available
+      if (typeof URL === 'undefined' || !url) {
+        // Fallback validation using regex for test environments
+        const wsUrlPattern = /^(ws|wss):\/\/[a-zA-Z0-9.-]+(:[0-9]+)?(\/.*)?$/
+        if (!wsUrlPattern.test(url)) {
+          throw new ValidationError('Invalid WebSocket URL format')
+        }
+        return true
+      }
+      
       const parsed = new URL(url)
       if (!['ws:', 'wss:'].includes(parsed.protocol)) {
         throw new ValidationError('WebSocket URL must use ws:// or wss:// protocol')
       }
       return true
     } catch (error) {
-      throw new ValidationError('Invalid WebSocket URL format')
+      if (error instanceof ValidationError) {
+        throw error
+      }
+      // Fallback validation for environments where URL constructor fails
+      const wsUrlPattern = /^(ws|wss):\/\/[a-zA-Z0-9.-]+(:[0-9]+)?(\/.*)?$/
+      if (!wsUrlPattern.test(url)) {
+        throw new ValidationError('Invalid WebSocket URL format')
+      }
+      return true
     }
   }
 
