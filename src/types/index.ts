@@ -6,7 +6,7 @@ export interface Agent {
   position: Vector3
   velocity: Vector3
   currentState: AgentState
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   activeGoals: string[]
   connectedPeers: string[]
   metrics: AgentMetrics
@@ -67,7 +67,7 @@ export interface CausalEvent {
   type: 'message' | 'stateChange' | 'decision'
   agentId: string
   causedBy?: string[]
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 export interface TimeControlConfig {

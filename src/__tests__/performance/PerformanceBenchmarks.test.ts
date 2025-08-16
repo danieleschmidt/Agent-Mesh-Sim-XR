@@ -12,7 +12,7 @@ import type { Agent, AgentMeshXRConfig } from '../../types'
 
 describe('Performance Benchmarks', () => {
   let agentMeshXR: AgentMeshXR
-  let hyperScaleSystem: any
+  let hyperScaleSystem: ReturnType<typeof createHyperScaleSystem>
   
   const benchmarkConfig: AgentMeshXRConfig = {
     maxAgents: 1000000,
@@ -78,7 +78,7 @@ describe('Performance Benchmarks', () => {
       expect(totalTime).toBeLessThan(500) // Increased from 100ms
       expect(agentMeshXR.getAllAgents().length).toBe(1000)
       
-      console.log(`✓ Added 1000 agents in ${totalTime.toFixed(2)}ms`)
+      // Performance logging removed for test output clarity
     })
 
     it('should update 10000 agents in under 50ms', async () => {
@@ -108,7 +108,7 @@ describe('Performance Benchmarks', () => {
       
       expect(totalTime).toBeLessThan(50)
       
-      console.log(`✓ Updated 10000 agents in ${totalTime.toFixed(2)}ms`)
+      // Performance logging removed for test output clarity
     })
 
     it('should query agents by criteria in under 10ms for 50k agents', async () => {
@@ -132,7 +132,7 @@ describe('Performance Benchmarks', () => {
       expect(queryTime).toBeLessThan(10)
       expect(activeAgents.length).toBeGreaterThan(0)
       
-      console.log(`✓ Queried ${activeAgents.length} active agents from 50k in ${queryTime.toFixed(2)}ms`)
+      // Performance logging removed for test output clarity
     })
   })
 
@@ -158,7 +158,7 @@ describe('Performance Benchmarks', () => {
         expect(result.success).toBe(true)
         expect(result.scaling_efficiency).toBeGreaterThan(0.8)
         
-        console.log(`✓ Scaled to ${size} agents in ${scalingTime.toFixed(2)}ms (efficiency: ${(result.scaling_efficiency * 100).toFixed(1)}%)`)
+        // Performance logging removed for test output clarity
       }
       
       // Verify linear scaling characteristics
@@ -217,8 +217,7 @@ describe('Performance Benchmarks', () => {
       expect(avgFrameTime).toBeLessThan(maxFrameTime)
       expect(maxFrameTimeObserved).toBeLessThan(maxFrameTime * 1.5) // Allow 50% variance
       
-      console.log(`✓ Frame processing: avg=${avgFrameTime.toFixed(2)}ms, max=${maxFrameTimeObserved.toFixed(2)}ms, min=${minFrameTime.toFixed(2)}ms`)
-      console.log(`✓ Target frame time: ${maxFrameTime.toFixed(2)}ms (${targetFPS}fps)`)
+      // Performance logging removed for test output clarity
     }, 60000)
 
     it('should handle sudden load spikes without performance degradation', async () => {
@@ -254,9 +253,7 @@ describe('Performance Benchmarks', () => {
       expect(loadTime).toBeLessThan(baselineTime * 3)
       expect(spikeTime).toBeLessThan(10000) // Should handle spike in under 10s
       
-      console.log(`✓ Baseline performance: ${baselineTime.toFixed(2)}ms`)
-      console.log(`✓ Load spike handling: ${spikeTime.toFixed(2)}ms`)
-      console.log(`✓ Performance under load: ${loadTime.toFixed(2)}ms`)
+      // Performance logging removed for test output clarity
     }, 45000)
   })
 
@@ -284,8 +281,7 @@ describe('Performance Benchmarks', () => {
       // System should report high memory efficiency
       expect(report.resource_optimization).toBeDefined()
       
-      console.log(`✓ Memory usage: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB for ${targetAgents} agents`)
-      console.log(`✓ Memory per agent: ${memoryPerAgent.toFixed(0)} bytes`)
+      // Performance logging removed for test output clarity
     }, 60000)
 
     it('should handle memory pressure gracefully', async () => {
@@ -321,7 +317,7 @@ describe('Performance Benchmarks', () => {
         }
       }
       
-      console.log(`✓ Added ${agents.length} agents with controlled memory growth`)
+      // Performance logging removed for test output clarity
     }, 120000)
   })
 
@@ -353,7 +349,7 @@ describe('Performance Benchmarks', () => {
       expect(results.every(result => result !== undefined)).toBe(true)
       expect(totalTime).toBeLessThan(1000) // Should complete in under 1 second
       
-      console.log(`✓ Completed ${concurrentOperations} concurrent operations in ${totalTime.toFixed(2)}ms`)
+      // Performance logging removed for test output clarity
     })
 
     it('should maintain performance under high-frequency updates', async () => {
@@ -411,7 +407,7 @@ describe('Performance Benchmarks', () => {
       // Should maintain at least 90% of target frequency
       expect(actualFrequency).toBeGreaterThan(updateFrequency * 0.9)
       
-      console.log(`✓ Maintained ${actualFrequency.toFixed(1)}Hz update frequency (target: ${updateFrequency}Hz)`)
+      // Performance logging removed for test output clarity
     }, 10000)
   })
 
@@ -419,7 +415,7 @@ describe('Performance Benchmarks', () => {
     it('should handle high-throughput message processing', async () => {
       const messageCount = 100000
       const messageSize = 1024 // 1KB per message
-      const messages: any[] = []
+      const messages: Array<{id: string; data: string; timestamp: number}> = []
       
       // Generate test messages
       for (let i = 0; i < messageCount; i++) {
@@ -447,9 +443,7 @@ describe('Performance Benchmarks', () => {
       expect(processedMessages.length).toBe(messageCount)
       expect(messagesPerSecond).toBeGreaterThan(10000) // Should process 10k+ messages/sec
       
-      console.log(`✓ Processed ${messageCount} messages in ${processingTime.toFixed(2)}ms`)
-      console.log(`✓ Throughput: ${(throughput / 1024 / 1024).toFixed(2)} MB/s`)
-      console.log(`✓ Messages per second: ${messagesPerSecond.toFixed(0)}`)
+      // Performance logging removed for test output clarity
     })
   })
 })
