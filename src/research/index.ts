@@ -37,6 +37,24 @@ export type {
   QuantumAdvantage
 } from './QuantumSwarmIntelligence'
 
+// Benchmarking Framework
+export { BenchmarkingFramework } from './BenchmarkingFramework'
+export type {
+  BenchmarkResult,
+  ResourceMetrics,
+  ComparativeStudy,
+  PublicationMetrics,
+  AlgorithmConfiguration
+} from './BenchmarkingFramework'
+
+// Publication Generator
+export { PublicationGenerator } from './PublicationGenerator'
+export type {
+  ResearchPublication,
+  PublicationMetadata,
+  CitationEntry
+} from './PublicationGenerator'
+
 // Research Utility Functions
 export const ResearchUtils = {
   /**
