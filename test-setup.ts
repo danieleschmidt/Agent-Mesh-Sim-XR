@@ -266,3 +266,39 @@ global.requestAnimationFrame = vi.fn((callback) => {
 global.cancelAnimationFrame = vi.fn((id) => {
   clearTimeout(id)
 })
+
+// Mock URL.createObjectURL for Web Workers
+global.URL = {
+  createObjectURL: vi.fn(() => 'blob:mock-url'),
+  revokeObjectURL: vi.fn(),
+  ...global.URL
+} as any
+
+// Mock Worker for GPU acceleration
+global.Worker = vi.fn(() => ({
+  postMessage: vi.fn(),
+  terminate: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  onmessage: null,
+  onerror: null
+})) as any
+
+// Mock SharedArrayBuffer if not available
+if (typeof SharedArrayBuffer === 'undefined') {
+  global.SharedArrayBuffer = ArrayBuffer as any
+}
+
+// Mock OffscreenCanvas for WebGL compute
+if (typeof OffscreenCanvas === 'undefined') {
+  global.OffscreenCanvas = class {
+    width: number = 1
+    height: number = 1
+    getContext = vi.fn(() => createWebGLContext())
+    transferToImageBitmap = vi.fn()
+    convertToBlob = vi.fn(() => Promise.resolve(new Blob()))
+  } as any
+}
+
+// Increase test timeout for performance-heavy tests
+vi.setConfig({ testTimeout: 30000 })
