@@ -13,6 +13,26 @@ export type {
   NovelAlgorithmCandidate
 } from './AutonomousResearchEngine'
 
+// Generation 4: BULLETPROOF PRODUCTION - Autonomous Validation
+export { AutonomousValidationFramework } from './AutonomousValidationFramework'
+export { AutonomousBenchmarkingSystem } from './AutonomousBenchmarkingSystem'
+
+// Research Validation Types
+export type {
+  ResearchHypothesis as ValidationHypothesis,
+  ValidationResult,
+  PublicationReport,
+  StatisticalResults,
+  ResearchDataset
+} from './AutonomousValidationFramework'
+
+export type {
+  Benchmark,
+  BenchmarkReport,
+  BenchmarkingStatus,
+  BenchmarkResults as BenchmarkingResults
+} from './AutonomousBenchmarkingSystem'
+
 // Adaptive Intelligence System
 export { AdaptiveIntelligenceSystem } from './AdaptiveIntelligenceSystem'
 export type {
