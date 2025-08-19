@@ -12,7 +12,13 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start:prod": "npm run build && npm run preview",
+    "benchmark": "node dist/demo/benchmark.js",
+    "deploy:docker": "docker build -t agent-mesh-sim-xr . && docker run -p 3000:3000 agent-mesh-sim-xr",
+    "quality:full": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "research:export": "node dist/demo/research-validation-demo.js",
+    "performance:profile": "node --inspect dist/demo/performance-profile.js"
   },
   "keywords": [
     "webxr",
