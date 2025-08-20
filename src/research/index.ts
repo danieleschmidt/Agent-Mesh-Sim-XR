@@ -360,6 +360,11 @@ export const ResearchUtils = {
 
 // Factory functions for integrated research system
 export function createResearchSystem(config: ResearchSystemConfig = {}): IntegratedResearchSystem {
+  // Import classes dynamically to avoid circular dependency issues
+  const { AutonomousResearchEngine } = require('./AutonomousResearchEngine')
+  const { AdaptiveIntelligenceSystem } = require('./AdaptiveIntelligenceSystem') 
+  const { QuantumSwarmIntelligence } = require('./QuantumSwarmIntelligence')
+  
   const researchEngine = new AutonomousResearchEngine()
   const adaptiveIntelligence = new AdaptiveIntelligenceSystem()
   const quantumSwarm = new QuantumSwarmIntelligence()

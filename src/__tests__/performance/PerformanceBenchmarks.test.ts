@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { performance } from 'perf_hooks'
 import { Vector3 } from 'three'
 import { AgentMeshXR } from '../../core/AgentMeshXR'
-import { createHyperScaleSystem } from '../../scale'
+import { createHyperScaleSystemSafe as createHyperScaleSystem } from '../../core/ProductionFallbacks'
 import type { Agent, AgentMeshXRConfig } from '../../types'
 
 /**

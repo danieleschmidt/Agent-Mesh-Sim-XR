@@ -552,6 +552,10 @@ function calculateScalingHeadroom(nodes: ComputeNode[], allocations: NodeAllocat
 
 // Factory function for integrated scaling system
 export function createHyperScaleSystem(config: HyperScaleSystemConfig = {}): IntegratedHyperScaleSystem {
+  // Import classes dynamically to avoid circular dependency issues
+  const { HyperScaleEngine } = require('./HyperScaleEngine')
+  const { QuantumPerformanceBooster } = require('./QuantumPerformanceBooster')
+  
   const hyperScaleEngine = new HyperScaleEngine(config.scaling || {} as HyperScaleConfig)
   const quantumBooster = new QuantumPerformanceBooster(config.quantum || {} as QuantumBoostConfig)
 
