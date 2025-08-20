@@ -1,0 +1,472 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.QuantumInspiredPlanner = void 0;
+const eventemitter3_1 = require("eventemitter3");
+class QuantumInspiredPlanner extends eventemitter3_1.EventEmitter {
+    tasks = new Map();
+    agents = new Map();
+    planningGraph = new Map();
+    config;
+    temperature;
+    currentStep = 0;
+    constructor(config = {}) {
+        super();
+        this.config = {
+            annealingSteps: 1000,
+            initialTemperature: 100.0,
+            coolingRate: 0.995,
+            coherenceThreshold: 0.8,
+            maxSuperpositionStates: 5,
+            ...config
+        };
+        this.temperature = this.config.initialTemperature;
+    }
+    // Core quantum-inspired planning algorithm
+    async planTasks(tasks, agents) {
+        this.tasks.clear();
+        this.agents.clear();
+        this.planningGraph.clear();
+        // Initialize quantum states
+        tasks.forEach(task => {
+            this.tasks.set(task.id, this.initializeQuantumState(task));
+        });
+        agents.forEach(agent => {
+            this.agents.set(agent.id, agent);
+        });
+        // Build quantum planning graph
+        this.buildPlanningGraph();
+        // Apply quantum annealing optimization
+        const optimizedPlan = await this.quantumAnnealing();
+        this.emit('planningComplete', {
+            tasks: Array.from(this.tasks.values()),
+            assignments: optimizedPlan,
+            metrics: this.calculatePlanningMetrics()
+        });
+        return optimizedPlan;
+    }
+    // Initialize task with quantum superposition of possible states
+    initializeQuantumState(task) {
+        const quantumTask = { ...task };
+        // Create superposition of possible execution states
+        const states = ['waiting', 'ready', 'executing', 'paused', 'completed'];
+        const amplitudes = new Map();
+        // Initial equal superposition with slight bias toward 'waiting'
+        states.forEach(state => {
+            amplitudes.set(state, state === 'waiting' ? 0.6 : 0.1);
+        });
+        quantumTask.quantumState = {
+            superposition: amplitudes,
+            entangled: [],
+            coherence: 1.0,
+            interference: 0.0
+        };
+        // Normalize the initial quantum amplitudes
+        this.normalizeQuantumAmplitudes(quantumTask);
+        return quantumTask;
+    }
+    // Build quantum planning graph with entanglement relationships
+    buildPlanningGraph() {
+        const tasks = Array.from(this.tasks.values());
+        tasks.forEach(task => {
+            task.quantumState.superposition.forEach((amplitude, state) => {
+                const nodeId = `${task.id}_${state}`;
+                this.planningGraph.set(nodeId, {
+                    taskId: task.id,
+                    state,
+                    probability: amplitude * amplitude, // |amplitude|^2
+                    energy: this.calculateStateEnergy(task, state),
+                    neighbors: []
+                });
+            });
+        });
+        // Create entanglement between dependent tasks
+        this.createQuantumEntanglement();
+        // Apply quantum interference effects
+        this.applyQuantumInterference();
+    }
+    // Create quantum entanglement between related tasks
+    createQuantumEntanglement() {
+        const tasks = Array.from(this.tasks.values());
+        tasks.forEach(task => {
+            // Entangle with dependency tasks
+            task.dependencies.forEach(depId => {
+                const depTask = this.tasks.get(depId);
+                if (depTask) {
+                    task.quantumState.entangled.push(depId);
+                    depTask.quantumState.entangled.push(task.id);
+                }
+            });
+            // Entangle spatially close tasks
+            tasks.forEach(otherTask => {
+                if (task.id !== otherTask.id && task.position && otherTask.position) {
+                    const distance = task.position.distanceTo(otherTask.position);
+                    if (distance < 5.0) { // 5 unit threshold
+                        const entanglementStrength = Math.exp(-distance / 2.0);
+                        if (entanglementStrength > 0.3) {
+                            task.quantumState.entangled.push(otherTask.id);
+                        }
+                    }
+                }
+            });
+        });
+    }
+    // Apply quantum interference to adjust task priorities
+    applyQuantumInterference() {
+        this.tasks.forEach(task => {
+            let interferenceSum = 0;
+            task.quantumState.entangled.forEach(entangledId => {
+                const entangledTask = this.tasks.get(entangledId);
+                if (entangledTask) {
+                    // Calculate interference based on phase relationship
+                    const phase1 = this.calculateTaskPhase(task);
+                    const phase2 = this.calculateTaskPhase(entangledTask);
+                    const phaseDiff = Math.abs(phase1 - phase2);
+                    // Constructive interference increases priority
+                    const interference = Math.cos(phaseDiff) * entangledTask.quantumState.coherence;
+                    interferenceSum += interference;
+                }
+            });
+            task.quantumState.interference = Math.tanh(interferenceSum / Math.max(1, task.quantumState.entangled.length));
+        });
+    }
+    // Calculate quantum phase for task based on its properties
+    calculateTaskPhase(task) {
+        return (task.priority * task.estimatedDuration) % (2 * Math.PI);
+    }
+    // Quantum annealing optimization for task assignment
+    async quantumAnnealing() {
+        let bestAssignment = this.generateRandomAssignment();
+        let bestEnergy = this.calculateSystemEnergy(bestAssignment);
+        for (let step = 0; step < this.config.annealingSteps; step++) {
+            this.currentStep = step;
+            // Generate neighboring solution using quantum tunneling
+            const newAssignment = this.quantumTunnel(bestAssignment);
+            const newEnergy = this.calculateSystemEnergy(newAssignment);
+            // Quantum acceptance probability
+            const deltaE = newEnergy - bestEnergy;
+            const acceptanceProbability = deltaE < 0 ? 1.0 : Math.exp(-deltaE / this.temperature);
+            if (Math.random() < acceptanceProbability) {
+                bestAssignment = newAssignment;
+                bestEnergy = newEnergy;
+                // Update quantum states based on acceptance
+                this.updateQuantumStates(newAssignment);
+            }
+            // Quantum decoherence - reduce coherence over time
+            this.applyDecoherence();
+            // Cool down temperature
+            this.temperature *= this.config.coolingRate;
+            // Emit progress
+            if (step % 100 === 0) {
+                this.emit('annealingProgress', {
+                    step,
+                    temperature: this.temperature,
+                    energy: bestEnergy,
+                    assignment: bestAssignment
+                });
+            }
+        }
+        return bestAssignment;
+    }
+    // Quantum tunneling to explore solution space
+    quantumTunnel(currentAssignment) {
+        const newAssignment = new Map(currentAssignment);
+        const tasks = Array.from(this.tasks.keys());
+        const agents = Array.from(this.agents.keys());
+        // Handle empty task list case
+        if (tasks.length === 0) {
+            return newAssignment;
+        }
+        // Select random task with probability based on quantum coherence
+        const task = this.selectTaskByCoherence(tasks);
+        const currentAgents = newAssignment.get(task) || [];
+        // Quantum tunneling: reassign with probability based on superposition
+        const taskObj = this.tasks.get(task);
+        if (!taskObj || !taskObj.quantumState) {
+            return newAssignment;
+        }
+        const tunnelingProbability = taskObj.quantumState.coherence * this.temperature / this.config.initialTemperature;
+        if (Math.random() < tunnelingProbability) {
+            // Reassign using quantum probability amplitudes
+            const newAgentCount = Math.min(taskObj.requiredAgents, agents.length);
+            const selectedAgents = this.selectAgentsByQuantumProbability(agents, newAgentCount);
+            newAssignment.set(task, selectedAgents);
+        }
+        return newAssignment;
+    }
+    // Select task based on quantum coherence probability
+    selectTaskByCoherence(tasks) {
+        if (tasks.length === 0) {
+            throw new Error('Cannot select from empty task list');
+        }
+        const weights = tasks.map(taskId => {
+            const task = this.tasks.get(taskId);
+            if (!task || !task.quantumState) {
+                return 0.1; // Small default weight for invalid tasks
+            }
+            return Math.max(0.01, task.quantumState.coherence); // Ensure minimum positive weight
+        });
+        return this.weightedRandomSelect(tasks, weights);
+    }
+    // Select agents using quantum probability distribution
+    selectAgentsByQuantumProbability(agents, count) {
+        const agentWeights = agents.map(agentId => {
+            const agent = this.agents.get(agentId);
+            // Weight based on agent state and quantum interference
+            return agent.currentState.energy * (1 + Math.random() * 0.2); // quantum uncertainty
+        });
+        const selected = [];
+        const availableAgents = [...agents];
+        const availableWeights = [...agentWeights];
+        for (let i = 0; i < count && availableAgents.length > 0; i++) {
+            const selectedIndex = this.weightedRandomSelectIndex(availableWeights);
+            selected.push(availableAgents[selectedIndex]);
+            // Remove selected agent
+            availableAgents.splice(selectedIndex, 1);
+            availableWeights.splice(selectedIndex, 1);
+        }
+        return selected;
+    }
+    // Weighted random selection utility
+    weightedRandomSelect(items, weights) {
+        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+        const random = Math.random() * totalWeight;
+        let weightSum = 0;
+        for (let i = 0; i < items.length; i++) {
+            weightSum += weights[i];
+            if (random <= weightSum) {
+                return items[i];
+            }
+        }
+        return items[items.length - 1];
+    }
+    weightedRandomSelectIndex(weights) {
+        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+        const random = Math.random() * totalWeight;
+        let weightSum = 0;
+        for (let i = 0; i < weights.length; i++) {
+            weightSum += weights[i];
+            if (random <= weightSum) {
+                return i;
+            }
+        }
+        return weights.length - 1;
+    }
+    // Calculate energy of a task in a given state
+    calculateStateEnergy(task, state) {
+        let energy = 0;
+        // Base energy from priority (higher priority = lower energy)
+        energy += (10 - task.priority) * 10;
+        // Duration penalty
+        energy += task.estimatedDuration * 0.1;
+        // State-specific energy
+        switch (state) {
+            case 'waiting':
+                energy += 0;
+                break;
+            case 'ready':
+                energy -= 5; // Preferred state
+                break;
+            case 'executing':
+                energy += task.estimatedDuration * 0.05;
+                break;
+            case 'paused':
+                energy += 20; // High penalty
+                break;
+            case 'completed':
+                energy -= 50; // Very low energy (stable)
+                break;
+        }
+        // Constraint penalties
+        task.constraints.forEach(constraint => {
+            energy += constraint.weight * this.evaluateConstraintViolation(constraint, state);
+        });
+        return energy;
+    }
+    // Calculate total system energy for assignment
+    calculateSystemEnergy(assignment) {
+        let totalEnergy = 0;
+        assignment.forEach((agentIds, taskId) => {
+            const task = this.tasks.get(taskId);
+            // Task assignment energy
+            const assignmentPenalty = Math.abs(agentIds.length - task.requiredAgents) * 50;
+            totalEnergy += assignmentPenalty;
+            // Agent workload energy
+            agentIds.forEach(agentId => {
+                const agent = this.agents.get(agentId);
+                totalEnergy += (10 - agent.currentState.energy) * 2;
+            });
+            // Quantum interference contribution
+            totalEnergy += task.quantumState.interference * -10; // Negative = good
+        });
+        // Entanglement energy
+        totalEnergy += this.calculateEntanglementEnergy(assignment);
+        return totalEnergy;
+    }
+    // Calculate energy contribution from quantum entanglement
+    calculateEntanglementEnergy(assignment) {
+        let entanglementEnergy = 0;
+        this.tasks.forEach(task => {
+            task.quantumState.entangled.forEach(entangledId => {
+                const entangledTask = this.tasks.get(entangledId);
+                if (entangledTask) {
+                    const task1Agents = assignment.get(task.id) || [];
+                    const task2Agents = assignment.get(entangledId) || [];
+                    // Energy bonus for compatible assignments
+                    const sharedAgents = task1Agents.filter(id => task2Agents.includes(id));
+                    entanglementEnergy -= sharedAgents.length * 5; // Bonus for shared agents
+                    // Penalty for conflicting temporal assignments
+                    if (this.hasTemporalConflict(task, entangledTask)) {
+                        entanglementEnergy += 25;
+                    }
+                }
+            });
+        });
+        return entanglementEnergy;
+    }
+    // Check for temporal conflicts between entangled tasks
+    hasTemporalConflict(task1, task2) {
+        // Simplified temporal conflict detection
+        return task1.dependencies.includes(task2.id) || task2.dependencies.includes(task1.id);
+    }
+    // Generate random initial assignment
+    generateRandomAssignment() {
+        const assignment = new Map();
+        const agents = Array.from(this.agents.keys());
+        this.tasks.forEach(task => {
+            const requiredAgents = Math.min(task.requiredAgents, agents.length);
+            if (agents.length > 0 && requiredAgents > 0) {
+                const shuffled = [...agents].sort(() => Math.random() - 0.5);
+                assignment.set(task.id, shuffled.slice(0, requiredAgents));
+            }
+            else {
+                assignment.set(task.id, []);
+            }
+        });
+        return assignment;
+    }
+    // Update quantum states based on annealing step
+    updateQuantumStates(assignment) {
+        this.tasks.forEach(task => {
+            const assignedAgents = assignment.get(task.id) || [];
+            // Update superposition based on assignment success
+            const success = assignedAgents.length === task.requiredAgents;
+            task.quantumState.superposition.forEach((amplitude, state) => {
+                if (state === 'ready' && success) {
+                    task.quantumState.superposition.set(state, Math.min(1.0, amplitude * 1.1));
+                }
+                else if (state === 'waiting' && !success) {
+                    task.quantumState.superposition.set(state, Math.min(1.0, amplitude * 1.05));
+                }
+            });
+            // Normalize amplitudes
+            this.normalizeQuantumAmplitudes(task);
+        });
+    }
+    // Apply quantum decoherence
+    applyDecoherence() {
+        const decoherenceRate = 0.99 - (this.currentStep / this.config.annealingSteps) * 0.1;
+        this.tasks.forEach(task => {
+            task.quantumState.coherence *= decoherenceRate;
+            // Reduce superposition as coherence decreases
+            if (task.quantumState.coherence < this.config.coherenceThreshold) {
+                this.collapseQuantumState(task);
+            }
+            else {
+                // Apply decoherence to amplitudes and normalize
+                const decoherenceFactor = Math.sqrt(decoherenceRate);
+                task.quantumState.superposition.forEach((amplitude, state) => {
+                    task.quantumState.superposition.set(state, amplitude * decoherenceFactor);
+                });
+                this.normalizeQuantumAmplitudes(task);
+            }
+        });
+    }
+    // Collapse quantum superposition to classical state
+    collapseQuantumState(task) {
+        let maxAmplitude = 0;
+        let dominantState = 'waiting';
+        task.quantumState.superposition.forEach((amplitude, state) => {
+            if (amplitude > maxAmplitude) {
+                maxAmplitude = amplitude;
+                dominantState = state;
+            }
+        });
+        // Collapse to dominant state
+        task.quantumState.superposition.clear();
+        task.quantumState.superposition.set(dominantState, 1.0);
+        task.quantumState.coherence = 0.0;
+    }
+    // Normalize quantum amplitude probabilities
+    normalizeQuantumAmplitudes(task) {
+        const amplitudes = Array.from(task.quantumState.superposition.values());
+        const norm = Math.sqrt(amplitudes.reduce((sum, amp) => sum + Math.abs(amp) * Math.abs(amp), 0));
+        if (norm > 0.001) { // Add small epsilon to avoid division by very small numbers
+            task.quantumState.superposition.forEach((amplitude, state) => {
+                task.quantumState.superposition.set(state, amplitude / norm);
+            });
+        }
+        else {
+            // If norm is too small, reset to equal probabilities
+            const states = Array.from(task.quantumState.superposition.keys());
+            const equalProbability = 1.0 / Math.sqrt(states.length);
+            task.quantumState.superposition.clear();
+            states.forEach(state => {
+                task.quantumState.superposition.set(state, equalProbability);
+            });
+        }
+    }
+    // Evaluate constraint violation penalty
+    evaluateConstraintViolation(constraint, state) {
+        switch (constraint.type) {
+            case 'time':
+                return state === 'paused' ? constraint.value : 0;
+            case 'resource':
+                return state === 'executing' ? constraint.value * 0.5 : 0;
+            case 'dependency':
+                return state === 'ready' && !this.areDependenciesMet(constraint.value) ? 100 : 0;
+            case 'spatial':
+                return 0; // Simplified for now
+            default:
+                return 0;
+        }
+    }
+    // Check if task dependencies are met
+    areDependenciesMet(dependencies) {
+        return dependencies.every(depId => {
+            const depTask = this.tasks.get(depId);
+            return depTask && depTask.quantumState.superposition.has('completed');
+        });
+    }
+    // Calculate planning metrics
+    calculatePlanningMetrics() {
+        const totalTasks = this.tasks.size;
+        const entangledTasks = Array.from(this.tasks.values()).filter(t => t.quantumState.entangled.length > 0).length;
+        const avgCoherence = Array.from(this.tasks.values()).reduce((sum, t) => sum + t.quantumState.coherence, 0) / totalTasks;
+        return {
+            totalTasks,
+            entangledTasks,
+            entanglementRatio: entangledTasks / totalTasks,
+            averageCoherence: avgCoherence,
+            finalTemperature: this.temperature,
+            annealingSteps: this.currentStep
+        };
+    }
+    // Get current quantum state visualization data
+    getQuantumStateVisualization() {
+        const stateData = Array.from(this.tasks.entries()).map(([taskId, task]) => ({
+            taskId,
+            superposition: Array.from(task.quantumState.superposition.entries()),
+            entangled: task.quantumState.entangled,
+            coherence: task.quantumState.coherence,
+            interference: task.quantumState.interference
+        }));
+        return {
+            tasks: stateData,
+            planningGraph: Array.from(this.planningGraph.entries()).map(([nodeId, node]) => ({
+                nodeId,
+                ...node
+            }))
+        };
+    }
+}
+exports.QuantumInspiredPlanner = QuantumInspiredPlanner;

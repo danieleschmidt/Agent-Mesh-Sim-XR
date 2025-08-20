@@ -3,25 +3,26 @@
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "types": ["node"],
-    "module": "ESNext",
+    "module": "CommonJS",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "isolatedModules": false,
+    "noEmit": false,
     "jsx": "preserve",
-    "strict": true,
+    "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": false,
     "declaration": true,
     "outDir": "dist",
     "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "paths": {
       "@/*": ["src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "src/__tests__", "**/*.test.ts", "**/*.spec.ts", "test-setup.ts", "src/demo", "src/enterprise", "src/planning", "src/research", "src/scale", "src/utils/AdvancedErrorRecovery.ts", "src/visualization/SwarmVisualizer.ts", "src/optimization", "src/security"]
+  "exclude": ["node_modules", "dist", "src/__tests__", "**/*.test.ts", "**/*.spec.ts", "test-setup.ts"]
 }

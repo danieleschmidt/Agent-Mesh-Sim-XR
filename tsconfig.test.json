@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "dist-test"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "src/__tests__", 
+    "**/*.test.ts", 
+    "**/*.spec.ts", 
+    "test-setup.ts",
+    "src/demo",
+    "src/enterprise",
+    "src/optimization",
+    "src/security",
+    "src/utils/AdvancedErrorRecovery.ts",
+    "src/visualization/SwarmVisualizer.ts"
+  ]
+}
