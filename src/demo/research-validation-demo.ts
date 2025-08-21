@@ -1,3 +1,4 @@
+import { Vector3 } from 'three'
 import { logger } from '../utils/Logger'
 import { BenchmarkingFramework } from '../research/BenchmarkingFramework'
 import { PublicationGenerator } from '../research/PublicationGenerator'
@@ -426,17 +427,35 @@ export class ResearchValidationDemo {
   private generateTestSwarm(count: number): Agent[] {
     return Array.from({ length: count }, (_, i) => ({
       id: `test_agent_${i}`,
-      position: { 
-        x: Math.random() * 1000, 
-        y: Math.random() * 1000, 
-        z: Math.random() * 100 
-      },
+      type: 'research_test',
+      position: new Vector3(
+        Math.random() * 1000, 
+        Math.random() * 1000, 
+        Math.random() * 100 
+      ),
+      velocity: new Vector3(0, 0, 0),
       currentState: {
-        energy: Math.random() * 10,
-        memory: new Map(),
-        timestamp: Date.now()
-      }
-    }) as Agent)
+        status: 'active' as const,
+        behavior: `behavior_${i % 3}`,
+        role: `researcher_${i % 2}`,
+        energy: Math.random(),
+        priority: Math.floor(Math.random() * 10),
+        goals: [`research_goal_${i % 5}`]
+      },
+      metadata: {
+        created: Date.now(),
+        researchType: 'validation'
+      },
+      activeGoals: [`research_goal_${i % 5}`],
+      connectedPeers: [],
+      metrics: {
+        cpuMs: Math.random() * 1000,
+        memoryMB: Math.random() * 500,
+        msgPerSec: Math.random() * 100,
+        uptime: Date.now() - Math.random() * 3600000
+      },
+      lastUpdate: Date.now()
+    }))
   }
 
   private calculateAverageImprovement(studies: any[]): number {
