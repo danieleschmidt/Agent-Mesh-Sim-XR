@@ -226,7 +226,7 @@ export const ScalingUtils = {
 
     return {
       quantum_backend: computationalComplexity === 'extreme' ? 'real_hardware' : 'simulator',
-      max_qubits: this.calculateRequiredQubits(computationalComplexity, quantumAlgorithms),
+      max_qubits: calculateRequiredQubits(computationalComplexity, quantumAlgorithms),
       quantum_algorithms: quantumAlgorithms,
       error_correction: computationalComplexity !== 'low',
       noise_mitigation: true,
@@ -275,13 +275,13 @@ export const ScalingUtils = {
       max_sustainable_fps: Math.floor(maxSustainableFPS),
       min_achievable_latency_ms: Math.ceil(minLatencyMs),
       bottleneck_analysis: {
-        primary_bottleneck: this.identifyPrimaryBottleneck(
+        primary_bottleneck: identifyPrimaryBottleneck(
           memoryLimitedAgents, 
           cpuLimitedAgents, 
           gpuLimitedAgents, 
           networkLimitedAgents
         ),
-        scaling_recommendations: this.generateScalingRecommendations(
+        scaling_recommendations: generateScalingRecommendations(
           currentConfig, 
           hardwareConstraints, 
           theoreticalMaxAgents
@@ -290,7 +290,7 @@ export const ScalingUtils = {
       quantum_advantage_domains: currentConfig.optimization_strategies
         .filter(s => s.name.includes('quantum'))
         .map(s => s.name),
-      estimated_scaling_cost: this.estimateScalingCost(theoreticalMaxAgents, hardwareConstraints)
+      estimated_scaling_cost: estimateScalingCost(theoreticalMaxAgents, hardwareConstraints)
     }
   },
 
@@ -306,7 +306,7 @@ export const ScalingUtils = {
     
     // Sort nodes by efficiency (performance per cost)
     const sortedNodes = nodes.sort((a, b) => 
-      this.calculateNodeEfficiency(b) - this.calculateNodeEfficiency(a)
+      calculateNodeEfficiency(b) - calculateNodeEfficiency(a)
     )
     
     let remainingAgents = totalAgents
@@ -314,18 +314,18 @@ export const ScalingUtils = {
     for (const node of sortedNodes) {
       if (remainingAgents <= 0) break
       
-      const nodeCapacity = this.calculateNodeCapacity(node, workload.performance_requirements)
+      const nodeCapacity = calculateNodeCapacity(node, workload.performance_requirements)
       const allocatedAgents = Math.min(remainingAgents, nodeCapacity)
       
       if (allocatedAgents > 0) {
         allocations.push({
           node_id: node.node_id,
           allocated_agents: allocatedAgents,
-          cpu_allocation: this.calculateCPUAllocation(allocatedAgents, node),
-          memory_allocation: this.calculateMemoryAllocation(allocatedAgents, node),
+          cpu_allocation: calculateCPUAllocation(allocatedAgents, node),
+          memory_allocation: calculateMemoryAllocation(allocatedAgents, node),
           gpu_allocation: node.node_type === 'gpu' ? 
-            this.calculateGPUAllocation(allocatedAgents, node) : 0,
-          expected_performance: this.predictNodePerformance(allocatedAgents, node),
+            calculateGPUAllocation(allocatedAgents, node) : 0,
+          expected_performance: predictNodePerformance(allocatedAgents, node),
           resource_utilization: allocatedAgents / nodeCapacity
         })
         
@@ -337,10 +337,10 @@ export const ScalingUtils = {
       total_nodes_used: allocations.length,
       total_agents_allocated: totalAgents - remainingAgents,
       allocation_efficiency: (totalAgents - remainingAgents) / totalAgents,
-      expected_performance: this.calculateOverallExpectedPerformance(allocations),
-      cost_estimate: this.calculateAllocationCost(allocations),
+      expected_performance: calculateOverallExpectedPerformance(allocations),
+      cost_estimate: calculateAllocationCost(allocations),
       node_allocations: allocations,
-      scaling_headroom: this.calculateScalingHeadroom(sortedNodes, allocations)
+      scaling_headroom: calculateScalingHeadroom(sortedNodes, allocations)
     }
   },
 
@@ -801,3 +801,7 @@ import type {
   QuantumAccelerationResult, 
   QuantumPerformanceReport 
 } from './QuantumPerformanceBooster'
+
+// Import classes for interface definitions
+import type { HyperScaleEngine } from './HyperScaleEngine'
+import type { QuantumPerformanceBooster } from './QuantumPerformanceBooster'

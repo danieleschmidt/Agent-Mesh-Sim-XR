@@ -1,6 +1,7 @@
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import { errorHandler, ErrorSeverity } from '../utils/ErrorHandler'
+import { errorHandler, ErrorSeverity, type ErrorContext } from '../utils/ErrorHandler'
+import type { ThroughputMetric, LatencyMetric } from '../types'
 import { PerformanceMonitor } from '../monitoring/PerformanceMonitor'
 
 /**
@@ -112,19 +113,6 @@ export interface PerformanceProfile {
   bottleneck_identification: BottleneckAnalysis[]
 }
 
-export interface ThroughputMetric {
-  agents_per_second: number
-  messages_per_second: number
-  operations_per_second: number
-  peak_throughput: number
-}
-
-export interface LatencyMetric {
-  average_latency_ms: number
-  p95_latency_ms: number
-  p99_latency_ms: number
-  max_latency_ms: number
-}
 
 export interface ScalabilityAnalysis {
   scaling_factor: number
@@ -270,7 +258,11 @@ export class AutonomousBenchmarkingSystem extends EventEmitter {
       errorHandler.handleError(
         error as Error,
         ErrorSeverity.HIGH,
-        { module: 'AutonomousBenchmarkingSystem', function: 'startAutonomousBenchmarking' }
+        { 
+          timestamp: Date.now(),
+          module: 'AutonomousBenchmarkingSystem', 
+          function: 'startAutonomousBenchmarking' 
+        }
       )
     }
   }
@@ -474,18 +466,22 @@ export class AutonomousBenchmarkingSystem extends EventEmitter {
     )
 
     return {
-      throughput_metrics: {
+      throughput_metrics: [{
+        timestamp: Date.now(),
+        value: Math.max(...throughputValues),
         agents_per_second: Math.max(...throughputValues),
         messages_per_second: Math.max(...throughputValues) * 10,
         operations_per_second: Math.max(...throughputValues) * 5,
         peak_throughput: Math.max(...throughputValues)
-      },
-      latency_metrics: {
+      }],
+      latency_metrics: [{
+        timestamp: Date.now(),
+        value: latencyValues.reduce((sum, val) => sum + val, 0) / latencyValues.length,
         average_latency_ms: latencyValues.reduce((sum, val) => sum + val, 0) / latencyValues.length,
         p95_latency_ms: this.calculatePercentile(latencyValues, 95),
         p99_latency_ms: this.calculatePercentile(latencyValues, 99),
         max_latency_ms: Math.max(...latencyValues)
-      },
+      }],
       scalability_analysis: this.analyzeScalability(testRuns),
       bottleneck_identification: this.identifyBottlenecks(testRuns)
     }

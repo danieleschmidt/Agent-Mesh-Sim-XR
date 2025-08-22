@@ -14,7 +14,7 @@ import {
   Camera
 } from 'three'
 import { LODSystem } from '../optimization/LODSystem'
-import { CacheManager } from '../optimization/CacheManager'
+import { CacheManager, AgentCache } from '../optimization/CacheManager'
 import { BatchProcessor } from '../optimization/BatchProcessor'
 import { logger } from '../utils/Logger'
 import type { Agent, SwarmVisualizationConfig } from '../types'
@@ -28,7 +28,7 @@ export class SwarmVisualizer {
   private config: SwarmVisualizationConfig
   private agentPositions: Map<string, Vector3[]> = new Map()
   private lodSystem?: LODSystem
-  private cache?: CacheManager
+  private cache?: AgentCache
   private updateBatcher?: BatchProcessor
   private camera: Camera | null = null
   private lastUpdateTime = 0
@@ -49,10 +49,11 @@ export class SwarmVisualizer {
 
     // Initialize optimization systems
     try {
-      this.cache = new CacheManager({
+      this.cache = new AgentCache({
         maxSize: 5000,
         defaultTTL: 30000, // 30 seconds
-        evictionPolicy: 'lru'
+        evictionPolicy: 'lru',
+        cleanupInterval: 60000
       })
 
       if (this.config.lodEnabled) {
@@ -72,13 +73,16 @@ export class SwarmVisualizer {
       }
 
       this.updateBatcher = new BatchProcessor(
-        async (agents: Agent[]) => {
-          this.processBatchedUpdates(agents)
+        async (items: { id: string; data: Agent }[]) => {
+          const agents = items.map(item => item.data)
+          await this.processBatchedUpdates(agents)
+          return agents
         },
         {
           maxBatchSize: 100,
           flushInterval: 16, // ~60fps
-          maxWaitTime: 33
+          maxWaitTime: 33,
+          processingConcurrency: 4
         }
       )
     } catch (error) {
@@ -107,13 +111,13 @@ export class SwarmVisualizer {
     }
     
     this.initializeTrail(agent)
-    this.cache.cacheAgentState(agent.id, agent.currentState)
-    this.lodSystem.updateAgent(agent)
+    this.cache?.cacheAgentState(agent.id, agent.currentState)
+    this.lodSystem?.updateAgent(agent)
   }
 
   updateAgent(agent: Agent): void {
     // Use batching for better performance
-    this.updateBatcher.updateAgent(agent)
+    this.updateBatcher?.add({ id: agent.id, data: agent })
   }
 
   removeAgent(agentId: string): void {
@@ -298,14 +302,14 @@ export class SwarmVisualizer {
   }
 
   private setupEventListeners(): void {
-    this.lodSystem.on('lodChanged', ({ agentId, newLOD }) => {
+    this.lodSystem?.on('lodChanged', ({ agentId, newLOD }) => {
       const agent = this.getAgentFromCache(agentId)
       if (agent) {
         this.updateAgentLOD(agent, newLOD)
       }
     })
 
-    this.lodSystem.on('qualityAdjusted', ({ direction }) => {
+    this.lodSystem?.on('qualityAdjusted', ({ direction }) => {
       logger.info('SwarmVisualizer', `Quality adjusted ${direction}`)
     })
   }
@@ -319,23 +323,23 @@ export class SwarmVisualizer {
 
   setCamera(camera: Camera): void {
     this.camera = camera
-    this.lodSystem.setCamera(camera)
+    this.lodSystem?.setCamera(camera)
   }
 
 
   updateAgentBatch(agents: Agent[]): void {
-    agents.forEach(agent => this.updateBatcher.updateAgent(agent))
+    agents.forEach(agent => this.updateBatcher?.add({ id: agent.id, data: agent }))
   }
 
   private updateAgentInternal(agent: Agent): void {
     // Check cache first
-    const cachedState = this.cache.getAgentState(agent.id)
+    const cachedState = this.cache?.getAgentState(agent.id)
     if (cachedState && this.statesEqual(cachedState, agent.currentState)) {
       return // No visual update needed
     }
 
     // Update LOD
-    if (this.config.lodEnabled) {
+    if (this.config.lodEnabled && this.lodSystem) {
       this.lodSystem.updateAgent(agent)
       
       // Skip rendering if agent is culled
@@ -352,12 +356,12 @@ export class SwarmVisualizer {
     this.updateTrail(agent)
     
     // Cache the new state
-    this.cache.cacheAgentState(agent.id, agent.currentState)
-    this.cache.cacheAgentMetrics(agent.id, agent.metrics)
+    this.cache?.cacheAgentState(agent.id, agent.currentState)
+    this.cache?.cacheAgentMetrics(agent.id, agent.metrics)
   }
 
   private updateAgentLOD(agent: Agent, lodLevel: number): void {
-    const lodConfig = this.lodSystem.getLODConfig(lodLevel)
+    const lodConfig = this.lodSystem?.getLODConfig(lodLevel)
     if (!lodConfig) return
 
     const mesh = this.agentMeshes.get(agent.id)
@@ -431,7 +435,7 @@ export class SwarmVisualizer {
   }
 
   adaptQuality(targetFPS: number, currentFPS: number): void {
-    if (this.config.lodEnabled) {
+    if (this.config.lodEnabled && this.lodSystem) {
       this.lodSystem.adaptQuality(targetFPS, currentFPS)
     }
   }
@@ -443,10 +447,10 @@ export class SwarmVisualizer {
     visibleAgents: number
   } {
     return {
-      lodStats: this.lodSystem.getStatistics(),
-      cacheStats: this.cache.getStatistics(),
-      batchStats: this.updateBatcher.getStatistics(),
-      visibleAgents: this.lodSystem.getVisibleAgentCount()
+      lodStats: this.lodSystem?.getStatistics() || {},
+      cacheStats: this.cache?.getStatistics() || {},
+      batchStats: this.updateBatcher?.getStatistics() || {},
+      visibleAgents: this.lodSystem?.getVisibleAgentCount() || 0
     }
   }
 
@@ -471,9 +475,9 @@ export class SwarmVisualizer {
     this.scene.remove(this.agentGroup)
     
     // Dispose optimization systems
-    this.lodSystem.dispose()
-    this.cache.dispose()
-    this.updateBatcher.dispose()
+    this.lodSystem?.dispose()
+    this.cache?.dispose()
+    this.updateBatcher?.dispose()
     
     logger.info('SwarmVisualizer', 'SwarmVisualizer disposed')
   }

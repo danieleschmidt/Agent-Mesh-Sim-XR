@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import { errorHandler, ErrorSeverity } from '../utils/ErrorHandler'
+import { errorHandler, ErrorSeverity, type ErrorContext } from '../utils/ErrorHandler'
 import { QuantumInspiredPlanner } from '../planning/QuantumInspiredPlanner'
 import { AutonomousResearchEngine, BenchmarkScenario, StatisticalAnalysis } from './AutonomousResearchEngine'
 import type { Agent, AgentState } from '../types'
@@ -244,9 +244,10 @@ export class BenchmarkingFramework extends EventEmitter {
 
     } catch (error) {
       errorHandler.handleError(error as Error, ErrorSeverity.HIGH, {
-        algorithm: algorithmName,
-        scenario: scenario.id,
-        run: runNumber
+        timestamp: Date.now(),
+        module: 'BenchmarkingFramework',
+        function: 'runBenchmark',
+        algorithm: algorithmName
       })
 
       // Return failure result

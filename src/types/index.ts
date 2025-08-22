@@ -20,6 +20,8 @@ export interface AgentState {
   energy: number
   priority: number
   goals?: string[]
+  memory?: Map<any, any>
+  timestamp?: number
 }
 
 export interface AgentMetrics {
@@ -74,4 +76,57 @@ export interface TimeControlConfig {
   maxRewind: number
   recordInterval: number
   causalTracking: boolean
+}
+
+export interface ErrorContext {
+  timestamp: number
+  module: string
+  function: string
+  sessionId?: string
+  additionalData?: Record<string, unknown>
+  severity?: 'low' | 'medium' | 'high' | 'critical'
+  cycle?: number
+  adaptation_id?: string
+  algorithm?: string
+  target?: string
+}
+
+export interface StatisticalResults {
+  significance: number
+  pValue: number
+  confidenceInterval: [number, number]
+  effect_size?: number
+  statistical_power?: number
+}
+
+export interface ThroughputMetric {
+  timestamp: number
+  value: number
+  agents_per_second?: number
+  messages_per_second?: number
+  operations_per_second?: number
+  peak_throughput?: number
+}
+
+export interface LatencyMetric {
+  timestamp: number
+  value: number
+  average_latency_ms?: number
+  p95_latency_ms?: number
+  p99_latency_ms?: number
+  max_latency_ms?: number
+}
+
+export interface CacheConfig {
+  maxSize: number
+  defaultTTL: number
+  evictionPolicy: 'lru' | 'lfu' | 'fifo'
+  cleanupInterval: number
+}
+
+export interface BatchItem<T> {
+  id: string
+  data: T
+  priority?: number
+  timestamp?: number
 }

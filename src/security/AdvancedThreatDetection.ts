@@ -115,19 +115,19 @@ export class AdvancedThreatDetection extends EventEmitter {
 
   public start(): void {
     if (this.isActive) {
-      logger.warn('AdvancedThreatDetection already active')
+      logger.warn('AdvancedThreatDetection', 'Already active')
       return
     }
 
     this.isActive = true
     this.startBehaviorLearning()
-    logger.info('AdvancedThreatDetection started')
+    logger.info('AdvancedThreatDetection', 'Started')
     this.emit('started')
   }
 
   public stop(): void {
     this.isActive = false
-    logger.info('AdvancedThreatDetection stopped')
+    logger.info('AdvancedThreatDetection', 'Stopped')
     this.emit('stopped')
   }
 
@@ -332,7 +332,7 @@ export class AdvancedThreatDetection extends EventEmitter {
 
   private startBehaviorLearning(): void {
     // Initialize behavior learning process
-    logger.info('Behavior learning started')
+    logger.info('AdvancedThreatDetection', 'Behavior learning started')
   }
 
   private initializeBehaviorBaseline(agent: Agent): void {
@@ -414,7 +414,7 @@ export class AdvancedThreatDetection extends EventEmitter {
     this.behaviorBaselines.clear()
     this.networkBaselines.clear()
     this.removeAllListeners()
-    logger.info('AdvancedThreatDetection disposed')
+    logger.info('AdvancedThreatDetection', 'Disposed')
   }
 }
 

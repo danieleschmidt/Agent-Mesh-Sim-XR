@@ -83,7 +83,9 @@ export class QuantumValidator {
       this.validateTaskConstraints(task.constraints, errors)
 
       // Validate quantum state
-      this.validateQuantumState(task.quantumState, errors, warnings)
+      const quantumValidation = this.validateQuantumState(task.quantumState)
+      errors.push(...quantumValidation.errors)
+      warnings.push(...quantumValidation.warnings)
 
       return {
         isValid: errors.length === 0,
