@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import { errorHandler, ErrorSeverity } from '../utils/ErrorHandler'
+import { errorHandler, ErrorSeverity, type ErrorContext } from '../utils/ErrorHandler'
 import type { Agent } from '../types'
 
 /**
@@ -127,6 +127,7 @@ export class AdaptiveIntelligenceSystem extends EventEmitter {
           error as Error,
           ErrorSeverity.MEDIUM,
           { 
+            timestamp: Date.now(),
             module: 'AdaptiveIntelligence', 
             function: 'adaptiveLearning',
             cycle: this.learningCycles
@@ -348,6 +349,7 @@ export class AdaptiveIntelligenceSystem extends EventEmitter {
           error as Error,
           ErrorSeverity.HIGH,
           { 
+            timestamp: Date.now(),
             module: 'AdaptiveIntelligence',
             function: 'implementAdaptation',
             adaptation_id: adaptation.candidate.id

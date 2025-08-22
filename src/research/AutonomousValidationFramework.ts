@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import { errorHandler, ErrorSeverity } from '../utils/ErrorHandler'
+import { errorHandler, ErrorSeverity, type ErrorContext } from '../utils/ErrorHandler'
 
 /**
  * Autonomous Research Validation Framework
@@ -161,7 +161,11 @@ export class AutonomousValidationFramework extends EventEmitter {
       errorHandler.handleError(
         error as Error,
         ErrorSeverity.HIGH,
-        { module: 'AutonomousValidationFramework', function: 'startAutonomousValidation' }
+        { 
+          timestamp: Date.now(),
+          module: 'AutonomousValidationFramework', 
+          function: 'startAutonomousValidation' 
+        }
       )
     }
   }
@@ -340,7 +344,7 @@ export class AutonomousValidationFramework extends EventEmitter {
     return stats.significance_achieved && 
            stats.p_value < 0.05 && 
            reproducibility > 0.8 &&
-           stats.statistical_power > 0.8
+           stats.power_analysis.statistical_power > 0.8
   }
 
   private calculatePublicationConfidence(stats: StatisticalResults, reproducibility: number): number {
@@ -357,7 +361,7 @@ export class AutonomousValidationFramework extends EventEmitter {
     confidence += reproducibility * 0.3
     
     // Statistical power contribution (10%)
-    confidence += stats.statistical_power * 0.1
+    confidence += stats.power_analysis.statistical_power * 0.1
 
     return Math.min(confidence, 1.0)
   }
@@ -369,7 +373,7 @@ export class AutonomousValidationFramework extends EventEmitter {
       recommendations.push('Increase sample size or extend data collection period')
     }
 
-    if (stats.statistical_power < 0.8) {
+    if (stats.power_analysis.statistical_power < 0.8) {
       recommendations.push('Improve statistical power through larger effect size or sample size')
     }
 
@@ -511,7 +515,7 @@ class ReproducibilityEngine {
   private assessStatisticalRobustness(stats: StatisticalResults): number {
     let score = 0
 
-    if (stats.statistical_power > 0.8) score += 0.4
+    if (stats.power_analysis.statistical_power > 0.8) score += 0.4
     if (stats.effect_size > 0.3) score += 0.3
     if (stats.sample_size > 50) score += 0.3
 

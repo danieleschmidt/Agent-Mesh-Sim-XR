@@ -234,7 +234,12 @@ export class HyperScaleEngine extends EventEmitter {
       errorHandler.handleError(
         error as Error,
         ErrorSeverity.HIGH,
-        { module: 'HyperScaleEngine', function: 'scaleToAgentCount', target: targetAgentCount }
+        { 
+          timestamp: Date.now(),
+          module: 'HyperScaleEngine', 
+          function: 'scaleToAgentCount', 
+          target: targetAgentCount.toString() 
+        }
       )
       throw error
     } finally {
@@ -421,7 +426,11 @@ export class HyperScaleEngine extends EventEmitter {
           errorHandler.handleError(
             error as Error,
             ErrorSeverity.MEDIUM,
-            { module: 'HyperScaleEngine', function: 'maintainHyperScale' }
+            { 
+              timestamp: Date.now(),
+              module: 'HyperScaleEngine', 
+              function: 'maintainHyperScale' 
+            }
           )
         }
         

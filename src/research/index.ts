@@ -194,10 +194,10 @@ export const ResearchUtils = {
 
     return {
       publication_ready: publicationReady,
-      quality_score: this.calculateQualityScore(results, issues.length, warnings.length),
+      quality_score: calculateQualityScore(results, issues.length, warnings.length),
       issues,
       warnings,
-      recommendations: this.generateRecommendations(results, issues, warnings)
+      recommendations: generateRecommendations(results, issues, warnings)
     }
   },
 
@@ -533,10 +533,60 @@ import type {
   ResearchResults,
   NovelAlgorithmCandidate
 } from './AutonomousResearchEngine'
+import type { AutonomousResearchEngine } from './AutonomousResearchEngine'
 import type { 
   SelfImprovementMetrics,
   IntelligenceProfile
 } from './AdaptiveIntelligenceSystem'
+import type { AdaptiveIntelligenceSystem } from './AdaptiveIntelligenceSystem'
 import type {
   QuantumAdvantage
 } from './QuantumSwarmIntelligence'
+import type { QuantumSwarmIntelligence } from './QuantumSwarmIntelligence'
+
+// Helper functions
+function calculateQualityScore(
+  results: ResearchResults,
+  issueCount: number,
+  warningCount: number
+): number {
+  let score = 1.0
+
+  // Statistical quality
+  score *= (1 - results.p_value) // Lower p-value = higher score
+  score *= Math.min(1.0, results.effect_size / 0.5) // Effect size normalization
+  score *= results.reproducibility_score
+  score *= results.novelty_score
+
+  // Penalty for issues and warnings
+  score *= Math.pow(0.8, issueCount) // 20% penalty per issue
+  score *= Math.pow(0.95, warningCount) // 5% penalty per warning
+
+  return Math.max(0, Math.min(1, score))
+}
+
+function generateRecommendations(
+  results: ResearchResults,
+  issues: string[],
+  warnings: string[]
+): string[] {
+  const recommendations: string[] = []
+
+  if (results.p_value >= 0.05) {
+    recommendations.push('Increase sample size or effect size to achieve statistical significance')
+  }
+
+  if (results.effect_size < 0.5) {
+    recommendations.push('Consider refining algorithm or methodology to increase practical impact')
+  }
+
+  if (results.reproducibility_score < 0.8) {
+    recommendations.push('Implement additional validation across different datasets and conditions')
+  }
+
+  if (results.novelty_score < 0.6) {
+    recommendations.push('Enhance algorithmic novelty or explore unexplored parameter spaces')
+  }
+
+  return recommendations
+}

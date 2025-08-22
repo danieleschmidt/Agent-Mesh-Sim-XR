@@ -145,7 +145,7 @@ export class FallbackQuantumBooster extends EventEmitter {
 export function createResearchSystemSafe(config: any = {}): any {
   try {
     // Try to load the real research system
-    const { createResearchSystem } = require('../research')
+    const { createResearchSystem } = require('../research/index')
     return createResearchSystem(config)
   } catch (error) {
     console.warn('Research system failed to load, using fallback:', error.message)
@@ -219,7 +219,7 @@ export function createResearchSystemSafe(config: any = {}): any {
 export function createHyperScaleSystemSafe(config: any = {}): any {
   try {
     // Try to load the real scaling system
-    const { createHyperScaleSystem } = require('../scale')
+    const { createHyperScaleSystem } = require('../scale/index')
     return createHyperScaleSystem(config)
   } catch (error) {
     console.warn('HyperScale system failed to load, using fallback:', error.message)

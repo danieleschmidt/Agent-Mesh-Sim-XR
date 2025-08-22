@@ -16,6 +16,11 @@ export interface ErrorContext {
   timestamp: number
   stackTrace?: string
   additionalData?: Record<string, any>
+  severity?: 'low' | 'medium' | 'high' | 'critical'
+  cycle?: number
+  adaptation_id?: string
+  algorithm?: string
+  target?: string
 }
 
 export interface ErrorReport {

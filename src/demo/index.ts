@@ -167,10 +167,24 @@ class AgentMeshXRDemo {
     const scene = this.xrSim.getScene()
     
     // Add inspector to scene
-    scene.add(this.inspector.getMainGroup())
+    try {
+      const inspectorGroup = this.inspector.getMainGroup()
+      if (inspectorGroup) {
+        (scene as any).add(inspectorGroup)
+      }
+    } catch (error) {
+      console.warn('Failed to add inspector to scene:', error)
+    }
     
-    // Add timeline to scene
-    scene.add(this.timelineVR.getGroup())
+    // Add timeline to scene  
+    try {
+      const timelineGroup = this.timelineVR.getGroup()
+      if (timelineGroup) {
+        (scene as any).add(timelineGroup)
+      }
+    } catch (error) {
+      console.warn('Failed to add timeline to scene:', error)
+    }
   }
 
   private toggleDebugMode(): void {

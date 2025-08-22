@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import { errorHandler, ErrorSeverity } from '../utils/ErrorHandler'
+import { errorHandler, ErrorSeverity, type ErrorContext } from '../utils/ErrorHandler'
 import type { Agent } from '../types'
 
 /**
@@ -473,6 +473,7 @@ export class QuantumSwarmIntelligence extends EventEmitter {
             error as Error,
             ErrorSeverity.MEDIUM,
             { 
+              timestamp: Date.now(),
               module: 'QuantumSwarmIntelligence',
               function: 'evolutionLoop'
             }

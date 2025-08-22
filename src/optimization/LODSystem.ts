@@ -215,7 +215,8 @@ export class LODSystem extends EventEmitter {
     // Simplified frustum check - in a real implementation,
     // you would use the camera's frustum
     const distance = this.calculateDistance(position)
-    return distance <= this.camera.far
+    const far = (this.camera as any).far
+    return distance <= (far || 1000)
   }
 
   private isOccluded(position: Vector3): boolean {

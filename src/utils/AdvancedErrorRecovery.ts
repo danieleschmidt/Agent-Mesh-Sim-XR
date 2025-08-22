@@ -37,7 +37,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
   constructor() {
     super()
     this.initializeDefaultStrategies()
-    logger.info('AdvancedErrorRecovery initialized')
+    logger.info('AdvancedErrorRecovery', 'Initialized')
   }
 
   private initializeDefaultStrategies(): void {
@@ -51,7 +51,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
       backoffStrategy: 'exponential',
       execute: async (error: Error, context: any): Promise<RecoveryResult> => {
         try {
-          logger.info('Attempting WebGL context recovery')
+          logger.info('AdvancedErrorRecovery', 'Attempting WebGL context recovery')
           
           if (context?.renderer) {
             // Force context restoration
@@ -96,7 +96,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
       backoffStrategy: 'constant',
       execute: async (error: Error, context: any): Promise<RecoveryResult> => {
         try {
-          logger.info('Attempting memory pressure recovery')
+          logger.info('AdvancedErrorRecovery', 'Attempting memory pressure recovery')
           
           // Force garbage collection if available
           if (typeof global !== 'undefined' && global.gc) {
@@ -112,7 +112,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
           // Reduce quality settings
           if (context?.qualityManager) {
             context.qualityManager.reduceQuality()
-            logger.info('Reduced rendering quality')
+            logger.info('AdvancedErrorRecovery', 'Reduced rendering quality')
           }
           
           // Wait for memory to settle
@@ -143,7 +143,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
       backoffStrategy: 'exponential',
       execute: async (error: Error, context: any): Promise<RecoveryResult> => {
         try {
-          logger.info('Attempting network recovery')
+          logger.info('AdvancedErrorRecovery', 'Attempting network recovery')
           
           if (context?.connector) {
             // Close existing connections
@@ -186,7 +186,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
       backoffStrategy: 'linear',
       execute: async (error: Error, context: any): Promise<RecoveryResult> => {
         try {
-          logger.info('Attempting agent system recovery')
+          logger.info('AdvancedErrorRecovery', 'Attempting agent system recovery')
           
           if (context?.agentManager) {
             // Reset agent pools
@@ -431,17 +431,17 @@ export class AdvancedErrorRecovery extends EventEmitter {
     this.recoveryAttempts.clear()
     this.errorHistory.clear()
     this.circuitBreakers.clear()
-    logger.info('AdvancedErrorRecovery reset')
+    logger.info('AdvancedErrorRecovery', 'Reset')
   }
 
   public enable(): void {
     this.isActive = true
-    logger.info('AdvancedErrorRecovery enabled')
+    logger.info('AdvancedErrorRecovery', 'Enabled')
   }
 
   public disable(): void {
     this.isActive = false
-    logger.info('AdvancedErrorRecovery disabled')
+    logger.info('AdvancedErrorRecovery', 'Disabled')
   }
 
   public dispose(): void {
@@ -449,7 +449,7 @@ export class AdvancedErrorRecovery extends EventEmitter {
     this.reset()
     this.strategies.clear()
     this.removeAllListeners()
-    logger.info('AdvancedErrorRecovery disposed')
+    logger.info('AdvancedErrorRecovery', 'Disposed')
   }
 }
 

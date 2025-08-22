@@ -172,8 +172,8 @@ export const EnterpriseUtils = {
       performance_score: performanceScore,
       enterprise_grade: overallScore > 0.8,
       certification_ready: overallScore > 0.9,
-      areas_for_improvement: this.identifyImprovementAreas?.(resiliencyReport, securityReport, overallScore) || [],
-      compliance_status: this.assessComplianceReadiness?.(securityReport) || 'unknown',
+      areas_for_improvement: identifyImprovementAreas(resiliencyReport, securityReport, overallScore),
+      compliance_status: assessComplianceReadiness(securityReport),
       next_review_date: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
     }
   },
@@ -186,15 +186,11 @@ export const EnterpriseUtils = {
     securityReport: SecurityReport,
     resiliencyReport: ResiliencyReport
   ): ComplianceAssessment => {
-    const requirements = this.getComplianceRequirements?.(framework) || []
+    const requirements = getComplianceRequirements(framework)
     const assessmentResults: ComplianceResult[] = []
 
     for (const requirement of requirements) {
-      const compliance = this.evaluateRequirementCompliance(
-        requirement,
-        securityReport,
-        resiliencyReport
-      )
+      const compliance = evaluateRequirementCompliance(requirement, securityReport, resiliencyReport)
       assessmentResults.push(compliance)
     }
 
@@ -207,7 +203,7 @@ export const EnterpriseUtils = {
       compliant: overallCompliance >= 0.8 && criticalGaps.length === 0,
       assessment_results: assessmentResults,
       critical_gaps: criticalGaps,
-      remediation_plan: this.generateRemediationPlan(criticalGaps),
+      remediation_plan: generateRemediationPlan(criticalGaps),
       next_assessment_date: Date.now() + (90 * 24 * 60 * 60 * 1000), // 90 days
       certification_status: overallCompliance >= 0.95 ? 'ready' : 'needs_improvement'
     }
@@ -292,8 +288,8 @@ export const EnterpriseUtils = {
       current_uptime: resiliencyReport.uptime_percentage,
       current_response_time: resiliencyReport.mean_time_to_recovery,
       current_availability: resiliencyReport.overall_health,
-      violations: this.identifySLAViolations?.(resiliencyReport, slaTargets) || [],
-      credits_owed: this.calculateSLACredits?.(complianceScore, slaTargets) || 0
+      violations: identifySLAViolations(resiliencyReport, slaTargets),
+      credits_owed: calculateSLACredits(complianceScore, slaTargets)
     }
   }
 }
