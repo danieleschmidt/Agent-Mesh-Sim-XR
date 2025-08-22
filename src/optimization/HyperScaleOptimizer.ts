@@ -280,8 +280,9 @@ export class HyperScaleOptimizer extends EventEmitter {
     
     agents.forEach(agent => {
       complexity += agent.currentState.status === 'active' ? 1.5 : 0.5
-      if (agent.trails && agent.trails.length > 0) complexity += 0.3
-      if (agent.connections && agent.connections.length > 0) complexity += agent.connections.length * 0.1
+      // Use connectedPeers instead of non-existent connections property
+      if (agent.connectedPeers && agent.connectedPeers.length > 0) complexity += agent.connectedPeers.length * 0.1
+      // Remove trails reference as it's not part of Agent interface
     })
     
     return Math.min(1, complexity / (agents.length * 2))
@@ -533,7 +534,7 @@ export class HyperScaleOptimizer extends EventEmitter {
   private shouldApplyAggressiveLOD(agent: Agent): boolean {
     // Apply aggressive LOD to inactive or distant agents
     return agent.currentState.status === 'idle' || 
-           (agent.currentState.energy < 30 && agent.currentState.status !== 'critical')
+           (agent.currentState.energy < 0.3 && agent.currentState.status !== 'error')
   }
 
   private applyAggressiveLOD(agent: Agent): void {

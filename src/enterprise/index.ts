@@ -24,7 +24,8 @@ import type {
 } from './CyberSecurityShield'
 
 // Core Enterprise Systems
-export { ResiliencyEngine } from './ResiliencyEngine'
+import { ResiliencyEngine } from './ResiliencyEngine'
+export { ResiliencyEngine }
 export type {
   ResiliencyConfig,
   SystemHealth,
@@ -37,7 +38,8 @@ export type {
 } from './ResiliencyEngine'
 
 // Cybersecurity Systems
-export { CyberSecurityShield } from './CyberSecurityShield'
+import { CyberSecurityShield } from './CyberSecurityShield'
+export { CyberSecurityShield }
 export type {
   SecurityConfig,
   ThreatProfile,
@@ -407,10 +409,33 @@ function calculateSLACredits(complianceScore: number, slaTargets: SLATargets): n
   return (1 - complianceScore) * slaTargets.monthly_revenue * 0.1 // 10% credit for violations
 }
 
+// Default configurations
+const defaultResiliencyConfig: ResiliencyConfig = {
+  max_failure_threshold: 5,
+  recovery_timeout_ms: 30000,
+  health_check_interval_ms: 5000,
+  auto_scaling_enabled: true,
+  backup_frequency_ms: 300000,
+  disaster_recovery_enabled: true,
+  circuit_breaker_threshold: 3,
+  chaos_engineering_enabled: false
+}
+
+const defaultSecurityConfig: SecurityConfig = {
+  zero_trust_enabled: true,
+  ai_threat_detection: true,
+  quantum_encryption: false,
+  multi_factor_auth: true,
+  behavioral_analysis: true,
+  threat_intelligence_feeds: [],
+  compliance_frameworks: ['SOC2', 'GDPR'],
+  penetration_testing_enabled: false
+}
+
 // Factory function for integrated enterprise system
 export function createEnterpriseSystem(config: EnterpriseSystemConfig = {}): IntegratedEnterpriseSystem {
-  const resiliencyEngine = new ResiliencyEngine(config.resilience || {})
-  const securityShield = new CyberSecurityShield(config.security || {})
+  const resiliencyEngine = new ResiliencyEngine({ ...defaultResiliencyConfig, ...config.resilience })
+  const securityShield = new CyberSecurityShield({ ...defaultSecurityConfig, ...config.security })
 
   return {
     resilience: resiliencyEngine,
