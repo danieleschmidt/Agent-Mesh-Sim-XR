@@ -72,7 +72,7 @@ export class QuantumPerformanceOptimizer extends EventEmitter {
   private config: QuantumOptimizationConfig
   private metrics: QuantumPerformanceMetrics
   private optimizationActive: boolean = false
-  private memoryMonitor: NodeJS.Timeout | null = null
+  private memoryMonitor: ReturnType<typeof setTimeout> | null = null
 
   constructor(config: Partial<QuantumOptimizationConfig> = {}) {
     super()

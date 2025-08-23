@@ -42,8 +42,8 @@ export class AdaptiveLoadBalancer extends EventEmitter {
   private strategies: Map<string, LoadBalancingStrategy> = new Map()
   private currentStrategy = 'weighted_round_robin'
   private isRunning = false
-  private processingInterval: NodeJS.Timeout | null = null
-  private healthCheckInterval: NodeJS.Timeout | null = null
+  private processingInterval: ReturnType<typeof setInterval> | null = null
+  private healthCheckInterval: ReturnType<typeof setInterval> | null = null
 
   constructor() {
     super()
