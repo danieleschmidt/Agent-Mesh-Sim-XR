@@ -61,7 +61,7 @@ export class EnhancedThreatDetection extends EventEmitter {
       patterns: [
         /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC)\b)/i,
         /(UNION\s+SELECT)/i,
-        /(\'\s*OR\s+\'\d+\'\s*=\s*\'\d+)/i,
+        /('\s*OR\s+'\d+'\s*=\s*'\d+)/i,
         /(;\s*DROP\s+TABLE)/i
       ],
       threshold: 1,
@@ -267,7 +267,7 @@ export class EnhancedThreatDetection extends EventEmitter {
     // Check for unusual input patterns
     if (input.length > 1000) score += 0.2
     if (input.includes('<script') || input.includes('javascript:')) score += 0.4
-    if (/['";\-\-]/.test(input)) score += 0.1
+    if (/['";-]/.test(input)) score += 0.1
     
     // Check behavioral patterns
     const currentTime = Date.now()

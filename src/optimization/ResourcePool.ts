@@ -27,7 +27,7 @@ export class ResourcePool<T extends PoolableResource> extends EventEmitter {
   private usedResources: Set<T> = new Set()
   private factory: ResourceFactory<T>
   private config: PoolConfig
-  private cleanupTimer: NodeJS.Timeout | null = null
+  private cleanupTimer: ReturnType<typeof setTimeout> | null = null
   private stats = {
     created: 0,
     reused: 0,

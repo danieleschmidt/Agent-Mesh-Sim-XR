@@ -88,7 +88,7 @@ export class QuantumMonitor extends EventEmitter {
   private thresholds: QuantumThresholds
   private errorHandler: QuantumErrorHandler
   private monitoringActive: boolean = false
-  private monitoringInterval: NodeJS.Timeout | null = null
+  private monitoringInterval: ReturnType<typeof setTimeout> | null = null
   private metricsRetentionPeriod: number = 24 * 60 * 60 * 1000 // 24 hours
 
   constructor(errorHandler: QuantumErrorHandler) {

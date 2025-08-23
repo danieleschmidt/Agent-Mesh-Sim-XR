@@ -69,7 +69,7 @@ export class AdvancedThreatDetection extends EventEmitter {
     this.addSignature({
       id: 'command_injection',
       name: 'Command Injection',
-      pattern: /(\|\s*|\&\&\s*|\;\s*)(rm\s|cat\s|ls\s|wget\s|curl\s|nc\s)/i,
+      pattern: /(\|\s*|&&\s*|;\s*)(rm\s|cat\s|ls\s|wget\s|curl\s|nc\s)/i,
       severity: 'critical',
       description: 'Command injection attempt detected',
       mitigation: ['validate_input', 'whitelist_commands', 'sandbox_execution']

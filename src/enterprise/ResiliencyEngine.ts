@@ -100,7 +100,7 @@ export class ResiliencyEngine extends EventEmitter {
   private backupScheduler: BackupScheduler
   private chaosEngineer: ChaosEngineer
   private isMonitoring = false
-  private healthCheckTimer: NodeJS.Timer | null = null
+  private healthCheckTimer: ReturnType<typeof setInterval> | null = null
 
   constructor(config: ResiliencyConfig) {
     super()
@@ -597,7 +597,7 @@ export class ResiliencyEngine extends EventEmitter {
   stopResiliencyMonitoring(): void {
     this.isMonitoring = false
     if (this.healthCheckTimer) {
-      clearInterval(this.healthCheckTimer as NodeJS.Timeout)
+      clearInterval(this.healthCheckTimer)
       this.healthCheckTimer = null
     }
     this.backupScheduler.stop()

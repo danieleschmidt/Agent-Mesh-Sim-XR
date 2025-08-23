@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3'
+import { logger } from '../utils/Logger'
 import type { Agent } from '../types'
 
 // Fallback Research System
@@ -148,7 +149,7 @@ export function createResearchSystemSafe(config: any = {}): any {
     const { createResearchSystem } = require('../research/index')
     return createResearchSystem(config)
   } catch (error) {
-    console.warn('Research system failed to load, using fallback:', error.message)
+    logger.warn('ProductionFallbacks', 'Research system failed to load, using fallback', { error: error.message })
     
     // Return fallback system
     const research = new FallbackResearchEngine()
@@ -222,7 +223,7 @@ export function createHyperScaleSystemSafe(config: any = {}): any {
     const { createHyperScaleSystem } = require('../scale/index')
     return createHyperScaleSystem(config)
   } catch (error) {
-    console.warn('HyperScale system failed to load, using fallback:', error.message)
+    logger.warn('ProductionFallbacks', 'HyperScale system failed to load, using fallback', { error: error.message })
     
     // Return fallback system
     const hyperScale = new FallbackHyperScaleEngine(config.scaling)
