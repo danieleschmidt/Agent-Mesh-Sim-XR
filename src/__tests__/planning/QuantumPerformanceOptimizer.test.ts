@@ -561,7 +561,7 @@ describe('QuantumPerformanceOptimizer', () => {
       const tasks = Array.from({ length: 50 }, (_, i) => ({
         id: `task-${i}`,
         type: 'measurement' as const,
-        priority: Math.floor(Math.random() * 10),
+        priority: Math.floor(Math.random() * 10) + 1,
         payload: { index: i }
       }))
       
