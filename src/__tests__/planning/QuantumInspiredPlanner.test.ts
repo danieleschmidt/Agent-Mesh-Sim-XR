@@ -368,7 +368,7 @@ describe('QuantumInspiredPlanner', () => {
       const largeTasks: Task[] = Array.from({ length: 100 }, (_, i) => ({
         id: `task${i}`,
         description: `Large task ${i}`,
-        priority: Math.floor(Math.random() * 10),
+        priority: Math.floor(Math.random() * 10) + 1,
         dependencies: i > 0 ? [`task${i-1}`] : [],
         estimatedDuration: Math.floor(Math.random() * 200) + 50,
         requiredAgents: Math.floor(Math.random() * 3) + 1,

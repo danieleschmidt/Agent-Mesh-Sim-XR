@@ -33,7 +33,9 @@ const createEnterpriseSystem = (config: any) => ({
       access_granted: true, 
       zero_trust_verified: true,
       trust_score: 0.95,
-      verification_methods: ['mfa', 'device_cert']
+      verification_methods: ['mfa', 'device_cert'],
+      confidence: 0.95,
+      required_actions: []
     }),
     detectThreats: () => Promise.resolve({ threats_detected: 0, mitigation_active: true }),
     maintainCompliance: () => Promise.resolve({ compliance_score: 0.98, frameworks_validated: ['SOC2', 'GDPR'] }),
@@ -41,6 +43,7 @@ const createEnterpriseSystem = (config: any) => ({
       timestamp: Date.now(),
       overall_security_score: 0.98,
       active_threats: 0,
+      high_severity_threats: 0,
       incidents_resolved: 15,
       zero_trust_compliance: 0.99,
       threat_detection_accuracy: 0.97,
@@ -60,8 +63,18 @@ const createEnterpriseSystem = (config: any) => ({
     return Promise.resolve({
       timestamp: Date.now(),
       overall_system_health: 0.95,
-      resilience_summary: this.resilience.generateResiliencyReport(),
-      security_summary: this.security.generateSecurityReport(),
+      resilience_report: this.resilience.generateResiliencyReport(),
+      security_report: this.security.generateSecurityReport(),
+      enterprise_readiness: {
+        overall_score: 0.95,
+        enterprise_grade: true
+      },
+      compliance_assessments: [
+        {
+          compliant: true,
+          overall_compliance_score: 0.98
+        }
+      ],
       enterprise_metrics: {
         availability: 99.95,
         performance_score: 0.94,
@@ -517,8 +530,8 @@ function createTestAgents(count: number): Agent[] {
         status: Math.random() > 0.5 ? 'active' : 'idle',
         behavior: `behavior_${i % 3}`,
         role: `role_${i % 2}`,
-        energy: Math.random(),
-        priority: Math.floor(Math.random() * 10),
+        energy: Math.random() * 100,
+        priority: Math.floor(Math.random() * 10) + 1,
         goals: [`goal_${i % 5}`]
       },
       metadata: {

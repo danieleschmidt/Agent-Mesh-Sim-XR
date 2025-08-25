@@ -376,7 +376,7 @@ describe('Performance Benchmarks', () => {
             id: agent.id,
             currentState: {
               ...agent.currentState,
-              energy: Math.random()
+              energy: Math.random() * 100
             }
           })
         }
@@ -466,8 +466,8 @@ function generateTestAgents(count: number): Agent[] {
         status: Math.random() > 0.3 ? 'active' : 'idle',
         behavior: `behavior_${i % 3}`,
         role: `role_${i % 2}`,
-        energy: Math.random(),
-        priority: Math.floor(Math.random() * 10),
+        energy: Math.random() * 100,
+        priority: Math.floor(Math.random() * 10) + 1,
         goals: [`goal_${Math.floor(Math.random() * 10)}`]
       },
       metadata: {
