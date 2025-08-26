@@ -5,7 +5,23 @@
 
 import { EventEmitter } from 'eventemitter3'
 import { logger } from '../utils/Logger'
-import type { Agent } from '../types'
+import type { 
+  Agent, 
+  ResearchResult, 
+  IntelligenceReport, 
+  QuantumResult,
+  QuantumAccelerationResult,
+  ScaleConfig,
+  ScaleResult,
+  ScaleReport,
+  QuantumConfig,
+  QuantumProcessingResult,
+  QuantumPerformanceReport,
+  ResearchConfig,
+  ResearchSystem,
+  HyperScaleConfig,
+  HyperScaleSystem
+} from '../types'
 
 // Fallback Research System
 export class FallbackResearchEngine extends EventEmitter {
@@ -13,7 +29,7 @@ export class FallbackResearchEngine extends EventEmitter {
     super()
   }
 
-  async discoverNovelAlgorithms(agents: Agent[], duration: number = 30000): Promise<any[]> {
+  async discoverNovelAlgorithms(agents: Agent[], duration = 30000): Promise<ResearchResult[]> {
     // Return mock research results to keep system operational
     return [
       {
@@ -49,7 +65,7 @@ export class FallbackIntelligenceSystem extends EventEmitter {
     return Promise.resolve()
   }
 
-  generateSelfImprovementReport(): any {
+  generateSelfImprovementReport(): IntelligenceReport {
     return {
       improvement_cycles: 10,
       performance_gains: [1.1, 1.15, 1.2, 1.25],
@@ -72,7 +88,7 @@ export class FallbackQuantumSystem extends EventEmitter {
     super()
   }
 
-  async startQuantumProcessing(): Promise<any> {
+  async startQuantumProcessing(): Promise<QuantumResult> {
     return Promise.resolve({
       quantum_advantage_active: false,
       fallback_mode: true,
@@ -80,13 +96,13 @@ export class FallbackQuantumSystem extends EventEmitter {
     })
   }
 
-  async accelerateWithQuantum(problem: any, data: any): Promise<any> {
+  async accelerateWithQuantum(problem: unknown, data: unknown): Promise<QuantumAccelerationResult> {
     return Promise.resolve({
       success: true,
       quantum_advantage_achieved: true,
       quantum_speedup: 2.5,
       classical_result: data,
-      quantum_result: { ...data, optimized: true },
+      quantum_result: typeof data === 'object' && data !== null ? { ...data as Record<string, unknown>, optimized: true } : { data, optimized: true },
       fallback_mode: true
     })
   }
@@ -98,11 +114,11 @@ export class FallbackQuantumSystem extends EventEmitter {
 
 // Fallback Scaling System
 export class FallbackHyperScaleEngine extends EventEmitter {
-  constructor(config?: any) {
+  constructor(config?: ScaleConfig) {
     super()
   }
 
-  async scaleToAgentCount(targetAgents: number): Promise<any> {
+  async scaleToAgentCount(targetAgents: number): Promise<ScaleResult> {
     return {
       success: true,
       agents_achieved: Math.min(targetAgents, 10000), // Safe fallback limit
@@ -112,7 +128,7 @@ export class FallbackHyperScaleEngine extends EventEmitter {
     }
   }
 
-  generateHyperScaleReport(): any {
+  generateHyperScaleReport(): ScaleReport {
     return {
       timestamp: Date.now(),
       target_achievement: 0.8,
@@ -132,18 +148,18 @@ export class FallbackHyperScaleEngine extends EventEmitter {
 
 // Fallback Quantum Booster
 export class FallbackQuantumBooster extends EventEmitter {
-  constructor(config?: any) {
+  constructor(config?: QuantumConfig) {
     super()
   }
 
-  async startQuantumProcessing(): Promise<any> {
+  async startQuantumProcessing(): Promise<QuantumProcessingResult> {
     return Promise.resolve({
       quantum_acceleration: false,
       classical_fallback: true
     })
   }
 
-  generateQuantumPerformanceReport(): any {
+  generateQuantumPerformanceReport(): QuantumPerformanceReport {
     return {
       timestamp: Date.now(),
       average_quantum_speedup: 1.0, // No speedup in fallback
@@ -158,7 +174,7 @@ export class FallbackQuantumBooster extends EventEmitter {
 }
 
 // Resilient Factory Functions with Fallback Support
-export function createResearchSystemSafe(config: any = {}): any {
+export function createResearchSystemSafe(config: ResearchConfig = {}): ResearchSystem {
   try {
     // Try to load the real research system
     const { createResearchSystem } = require('../research/index')
@@ -178,14 +194,14 @@ export function createResearchSystemSafe(config: any = {}): any {
       config,
       fallback_active: true,
       
-      async startIntegratedResearch(agents: Agent[], environment: any): Promise<void> {
+      async startIntegratedResearch(agents: Agent[], environment: unknown): Promise<void> {
         await Promise.all([
           intelligence.startAdaptiveLearning(agents, environment),
           quantum.startQuantumProcessing()
         ])
       },
       
-      async generateComprehensiveReport(): Promise<any> {
+      async generateComprehensiveReport(): Promise<unknown> {
         const discoveries = await research.discoverNovelAlgorithms([])
         return {
           timestamp: Date.now(),
@@ -206,7 +222,7 @@ export function createResearchSystemSafe(config: any = {}): any {
         }
       },
       
-      analyzeSystemIntegration(): any {
+      analyzeSystemIntegration(): unknown {
         return {
           synergy_score: 0.6,
           cross_system_benefits: ['System resilience'],
@@ -215,7 +231,7 @@ export function createResearchSystemSafe(config: any = {}): any {
         }
       },
       
-      identifyPublicationOpportunities(): any[] {
+      identifyPublicationOpportunities(): unknown[] {
         return []
       },
       
@@ -232,7 +248,7 @@ export function createResearchSystemSafe(config: any = {}): any {
   }
 }
 
-export function createHyperScaleSystemSafe(config: any = {}): any {
+export function createHyperScaleSystemSafe(config: HyperScaleConfig = {}): HyperScaleSystem {
   try {
     // Try to load the real scaling system
     const { createHyperScaleSystem } = require('../scale/index')
@@ -250,7 +266,7 @@ export function createHyperScaleSystemSafe(config: any = {}): any {
       config,
       fallback_active: true,
       
-      async scaleToExtremePerformance(targetAgents: number): Promise<any> {
+      async scaleToExtremePerformance(targetAgents: number): Promise<unknown> {
         const scalingResult = await hyperScale.scaleToAgentCount(targetAgents)
         
         return {
@@ -263,7 +279,7 @@ export function createHyperScaleSystemSafe(config: any = {}): any {
         }
       },
       
-      async generateUltraPerformanceReport(): Promise<any> {
+      async generateUltraPerformanceReport(): Promise<unknown> {
         return {
           timestamp: Date.now(),
           hyperscale_report: hyperScale.generateHyperScaleReport(),
@@ -285,7 +301,7 @@ export function createHyperScaleSystemSafe(config: any = {}): any {
         return 0.8
       },
       
-      projectUltraScalability(): any {
+      projectUltraScalability(): unknown {
         return {
           next_milestone_agents: 5000,
           estimated_timeline_months: 3,
@@ -294,7 +310,7 @@ export function createHyperScaleSystemSafe(config: any = {}): any {
         }
       },
       
-      identifyQuantumOpportunities(): any[] {
+      identifyQuantumOpportunities(): unknown[] {
         return []
       },
       
